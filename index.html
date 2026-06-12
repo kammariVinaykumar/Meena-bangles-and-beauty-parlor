@@ -1,0 +1,2476 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meena Bangles & Beauty Parlour - Premium Luxury Elegance</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            rosegold: {
+              50: '#fbf5f5',
+              100: '#f8ebeb',
+              200: '#f2cdce',
+              300: '#ebaeaf',
+              400: '#df7173',
+              500: '#B76E79', // Pure Rose Gold
+              600: '#a5636d',
+              700: '#8a525b',
+              800: '#6e4249',
+              900: '#5a363c',
+            },
+            champagne: '#F3E5AB',
+            gold: '#D4AF37'
+          },
+          fontFamily: {
+            serif: ['Playfair Display', 'Georgia', 'serif'],
+            sans: ['Montserrat', 'Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Google Fonts, Telugu Typography & FontAwesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Noto+Serif+Telugu:wght@300;400;500;600;700&family=Playfair+Display:ital,wght=0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Firebase SDKs for Auth -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+  <style>
+    /* Premium luxury custom glassmorphism & gradients */
+    .luxury-gradient {
+      background: linear-gradient(135deg, #fbf5f5 0%, #ffffff 50%, #f5e4e6 100%);
+    }
+    .dark .luxury-gradient {
+      background: linear-gradient(135deg, #1f1214 0%, #121212 50%, #2a181a 100%);
+    }
+    .rosegold-btn {
+      background: linear-gradient(135deg, #B76E79 0%, #D4AF37 100%);
+      transition: all 0.3s ease;
+    }
+    .rosegold-btn:hover {
+      background: linear-gradient(135deg, #a5636d 0%, #c49f27 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(183, 110, 121, 0.4);
+    }
+    .gold-border {
+      border-image: linear-gradient(to right, #B76E79, #D4AF37) 1;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #B76E79;
+      border-radius: 10px;
+    }
+
+    /* Telugu Typography Improvement Rules to prevent crowded text */
+    .lang-te {
+      font-family: 'Noto Serif Telugu', 'Montserrat', sans-serif !important;
+    }
+    .lang-te h1, .lang-te h2, .lang-te h3, .lang-te h4, .lang-te h5, .lang-te h6 {
+      font-family: 'Noto Serif Telugu', serif !important;
+      line-height: 1.8 !important;
+      letter-spacing: 0.04em !important;
+    }
+    .lang-te p, .lang-te span, .lang-te a, .lang-te button, .lang-te label, .lang-te input, .lang-te textarea {
+      line-height: 1.9 !important;
+      letter-spacing: 0.05em !important;
+    }
+  </style>
+</head>
+<body class="luxury-gradient text-stone-800 dark:text-stone-100 transition-colors duration-300 font-sans custom-scrollbar">
+
+  <!-- ================= TOP MESSAGE BANNER (TOASTS) ================= -->
+  <div id="toast-container" class="fixed top-5 right-5 z-[80] flex flex-col gap-3 pointer-events-none"></div>
+
+  <!-- ================= CONFIRMATION DIALOG MODAL ================= -->
+  <div id="confirm-modal" class="fixed inset-0 bg-black/60 z-[100] hidden backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-stone-900 w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl border border-rose-100 dark:border-stone-850 animate-scaleUp p-6 space-y-6">
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/40 flex items-center justify-center text-rosegold-500 mx-auto text-xl">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 class="text-lg font-bold font-serif text-stone-900 dark:text-white" id="confirm-title">Are you sure?</h3>
+        <p class="text-xs text-stone-500 dark:text-stone-400 leading-relaxed" id="confirm-msg">This action cannot be undone.</p>
+      </div>
+      <div class="flex gap-3">
+        <button id="confirm-cancel-btn" class="flex-1 py-2.5 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-xs font-semibold transition-all">Cancel</button>
+        <button id="confirm-ok-btn" class="flex-1 py-2.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-all shadow">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= LUXURY HEADER / NAVIGATION ================= -->
+  <header class="sticky top-0 z-40 w-full bg-white/85 dark:bg-stone-900/85 backdrop-blur-md border-b border-rose-100 dark:border-rose-950/40 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Logo / Title -->
+      <a href="#" class="flex items-center gap-3 group focus:outline-none">
+        <div class="w-11 h-11 rounded-full rosegold-btn flex items-center justify-center text-white text-xl font-serif shadow-md transition-transform duration-500 group-hover:rotate-180">
+          M
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-serif font-bold tracking-wider bg-gradient-to-r from-rosegold-600 via-rosegold-500 to-gold bg-clip-text text-transparent dark:from-rosegold-300 dark:to-gold">
+            Meena
+          </h1>
+          <p class="text-[9px] uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400 font-semibold">Bangles & Beauty Parlour</p>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm tracking-wide">
+        <a href="#hero" class="hover:text-rosegold-500 dark:hover:text-rosegold-300 transition-colors" data-lang="nav_home">Home</a>
+        <a href="#bangles" class="hover:text-rosegold-500 dark:hover:text-rosegold-300 transition-colors" data-lang="nav_bangles">Bangles Collection</a>
+        <a href="#services" class="hover:text-rosegold-500 dark:hover:text-rosegold-300 transition-colors" data-lang="nav_services">Parlour Services</a>
+        <a href="#gallery" class="hover:text-rosegold-500 dark:hover:text-rosegold-300 transition-colors" data-lang="nav_gallery">Gallery</a>
+        <a href="#offers" class="hover:text-rosegold-500 dark:hover:text-rosegold-300 transition-colors relative" data-lang="nav_offers">
+          Offers
+          <span class="absolute -top-3 -right-4 bg-rose-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full animate-bounce">NEW</span>
+        </a>
+        <a href="#reviews" class="hover:text-rosegold-500 dark:hover:text-rosegold-300 transition-colors" data-lang="nav_reviews">Reviews</a>
+        <a href="#contact" class="hover:text-rosegold-500 dark:hover:text-rosegold-300 transition-colors" data-lang="nav_contact">Contact Us</a>
+      </nav>
+
+      <!-- Right Utility Actions -->
+      <div class="flex items-center gap-2 sm:gap-4">
+        <!-- Language Switcher -->
+        <button id="lang-toggle" onclick="toggleLanguage()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-rosegold-300 dark:border-rosegold-700 hover:bg-rosegold-50 dark:hover:bg-rosegold-950/20 text-xs font-semibold tracking-wider transition-all" aria-label="Switch Language">
+          <i class="fa-solid fa-globe text-rosegold-500"></i>
+          <span id="lang-label">తెలుగు</span>
+        </button>
+
+        <!-- Dark/Light Theme -->
+        <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-full flex items-center justify-center text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all" aria-label="Toggle Theme">
+          <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
+        </button>
+
+        <!-- Admin Portal Trigger Button -->
+        <button onclick="openAdminPanel()" class="w-10 h-10 rounded-full flex items-center justify-center text-rosegold-500 dark:text-rosegold-300 hover:bg-rosegold-100/50 dark:hover:bg-rosegold-950/30 transition-all border border-rosegold-200 dark:border-rosegold-800" title="Admin Control Dashboard">
+          <i class="fa-solid fa-user-shield text-lg"></i>
+        </button>
+
+        <!-- Mobile Menu Trigger -->
+        <button onclick="toggleMobileMenu()" class="lg:hidden w-10 h-10 rounded-full flex items-center justify-center text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all" aria-label="Open Menu">
+          <i id="mobile-menu-icon" class="fa-solid fa-bars text-lg"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Navigation Panel -->
+    <div id="mobile-menu" class="hidden lg:hidden border-t border-rose-100 dark:border-rose-950/40 bg-white dark:bg-stone-900 transition-all duration-300">
+      <div class="px-4 pt-3 pb-6 space-y-2 flex flex-col font-medium text-base tracking-wide shadow-inner">
+        <a href="#hero" onclick="toggleMobileMenu()" class="p-3 rounded-lg hover:bg-rose-50 dark:hover:bg-stone-800" data-lang="nav_home">Home</a>
+        <a href="#bangles" onclick="toggleMobileMenu()" class="p-3 rounded-lg hover:bg-rose-50 dark:hover:bg-stone-800" data-lang="nav_bangles">Bangles Collection</a>
+        <a href="#services" onclick="toggleMobileMenu()" class="p-3 rounded-lg hover:bg-rose-50 dark:hover:bg-stone-800" data-lang="nav_services">Parlour Services</a>
+        <a href="#gallery" onclick="toggleMobileMenu()" class="p-3 rounded-lg hover:bg-rose-50 dark:hover:bg-stone-800" data-lang="nav_gallery">Gallery</a>
+        <a href="#offers" onclick="toggleMobileMenu()" class="p-3 rounded-lg hover:bg-rose-50 dark:hover:bg-stone-800 flex items-center gap-2" data-lang="nav_offers">
+          Offers <span class="bg-rose-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">NEW</span>
+        </a>
+        <a href="#reviews" onclick="toggleMobileMenu()" class="p-3 rounded-lg hover:bg-rose-50 dark:hover:bg-stone-800" data-lang="nav_reviews">Reviews</a>
+        <a href="#contact" onclick="toggleMobileMenu()" class="p-3 rounded-lg hover:bg-rose-50 dark:hover:bg-stone-800" data-lang="nav_contact">Contact Us</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= HERO SECTION ================= -->
+  <section id="hero" class="relative overflow-hidden pt-12 pb-24 md:py-32 flex items-center">
+    <!-- Stylized Backdrops -->
+    <div class="absolute top-0 right-0 -z-10 w-[40%] h-[60%] rounded-bl-[100px] bg-rose-100/50 dark:bg-rose-950/10 blur-2xl"></div>
+    <div class="absolute bottom-0 left-0 -z-10 w-[30%] h-[40%] rounded-tr-[100px] bg-gold/10 dark:bg-gold/5 blur-3xl"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <!-- Hero Left Text Content -->
+      <div class="lg:col-span-7 space-y-8 text-center lg:text-left">
+        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-rosegold-100 dark:bg-rosegold-950/40 text-rosegold-700 dark:text-rosegold-300 text-xs sm:text-sm font-semibold tracking-wider uppercase border border-rosegold-200 dark:border-rosegold-800 animate-pulse">
+          <i class="fa-solid fa-gem text-gold"></i> <span data-lang="hero_badge">Elegance Redefined</span>
+        </span>
+        
+        <h2 class="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-stone-900 dark:text-white leading-tight">
+          <span class="bg-gradient-to-r from-rosegold-600 to-gold bg-clip-text text-transparent dark:from-rosegold-300" data-lang="hero_title_1">Enhance Your Elegance</span> 
+          <br>
+          <span class="font-normal italic font-serif text-3xl sm:text-4xl lg:text-5xl block mt-2 text-stone-700 dark:text-stone-300" data-lang="hero_title_2">&amp; Premium Beauty Care</span>
+        </h2>
+        
+        <p class="text-stone-600 dark:text-stone-300 max-w-xl mx-auto lg:mx-0 text-base sm:text-lg leading-relaxed font-light" data-lang="hero_desc">
+          Step into a world of pure bridal aesthetics. Discover exquisite custom glass, stone, and thread bangles matched with signature cosmetic makeover packages designed by Meena.
+        </p>
+
+        <!-- CTA Action Buttons -->
+        <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+          <a href="#services" class="rosegold-btn text-white font-semibold px-8 py-4 rounded-full text-sm sm:text-base shadow-lg hover:shadow-xl transition-all w-full sm:w-auto text-center flex items-center justify-center gap-2">
+            <i class="fa-solid fa-magic-wand-sparkles"></i>
+            <span data-lang="hero_btn_parlour">Book Parlour Services</span>
+          </a>
+          <a href="#bangles" class="bg-white dark:bg-stone-800 border border-rosegold-300 dark:border-stone-700 hover:bg-rose-50 dark:hover:bg-stone-700 text-stone-800 dark:text-white font-semibold px-8 py-4 rounded-full text-sm sm:text-base shadow hover:shadow-md transition-all w-full sm:w-auto text-center flex items-center justify-center gap-2">
+            <i class="fa-solid fa-ring"></i>
+            <span data-lang="hero_btn_bangles">Explore Bangles</span>
+          </a>
+        </div>
+
+        <!-- Quick Trust Indicators -->
+        <div class="grid grid-cols-3 gap-4 pt-6 max-w-md mx-auto lg:mx-0 border-t border-rose-100 dark:border-stone-800/80">
+          <div class="text-center lg:text-left">
+            <h4 class="text-2xl sm:text-3xl font-bold text-rosegold-600 dark:text-rosegold-400 font-serif">1500+</h4>
+            <p class="text-xs uppercase tracking-wider text-stone-500 dark:text-stone-400 font-semibold" data-lang="trust_bangles">Bangle Styles</p>
+          </div>
+          <div class="text-center lg:text-left">
+            <h4 class="text-2xl sm:text-3xl font-bold text-rosegold-600 dark:text-rosegold-400 font-serif">500+</h4>
+            <p class="text-xs uppercase tracking-wider text-stone-500 dark:text-stone-400 font-semibold" data-lang="trust_brides">Happy Brides</p>
+          </div>
+          <div class="text-center lg:text-left">
+            <h4 class="text-2xl sm:text-3xl font-bold text-rosegold-600 dark:text-rosegold-400 font-serif">5 ★</h4>
+            <p class="text-xs uppercase tracking-wider text-stone-500 dark:text-stone-400 font-semibold" data-lang="trust_rating">Rating</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Right Graphical Banner -->
+      <div class="lg:col-span-5 relative mt-6 lg:mt-0 flex justify-center">
+        <div class="relative w-72 sm:w-80 md:w-96 aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border-4 border-white dark:border-stone-800 transform rotate-1 hover:rotate-0 transition-all duration-500">
+          <!-- Fallback vector placeholder using luxury patterns and icons -->
+          <div class="absolute inset-0 bg-gradient-to-tr from-[#B76E79] via-[#ebaeaf] to-[#D4AF37] flex flex-col justify-between p-8 text-white">
+            <div class="flex justify-between items-center">
+              <span class="text-xs tracking-widest font-serif italic">MEENA LUXURY</span>
+              <i class="fa-solid fa-crown text-gold text-xl animate-bounce"></i>
+            </div>
+            <div class="my-auto text-center space-y-4">
+              <span class="text-5xl font-serif">✧ ❈ ✧</span>
+              <p class="font-serif text-2xl tracking-wider leading-relaxed" data-lang="hero_gfx_text">Traditional Elegance meets Modern Glow</p>
+            </div>
+            <div class="flex justify-between text-xs tracking-wider uppercase">
+              <span data-lang="hero_gfx_bangles">Designer Bangles</span>
+              <span data-lang="hero_gfx_parlour">Exquisite Makeovers</span>
+            </div>
+          </div>
+        </div>
+        <!-- Decorative golden bubble accent -->
+        <div class="absolute -bottom-6 -right-6 w-24 h-24 rounded-full rosegold-btn flex items-center justify-center text-white text-3xl shadow-xl animate-spin-slow">
+          <i class="fa-solid fa-wand-sparkles"></i>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LATEST INSTANT OFFERS BANNER ================= -->
+  <section id="offers" class="py-16 bg-gradient-to-r from-rose-100/50 via-white to-gold/10 dark:from-stone-900 dark:via-stone-900 dark:to-rose-950/20 border-y border-rose-100 dark:border-rose-950/40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center space-y-3 mb-10">
+        <h3 class="text-xs uppercase tracking-widest text-rosegold-600 dark:text-rosegold-400 font-bold" data-lang="offers_subtitle">Festive Celebrations</h3>
+        <h2 class="text-3xl md:text-4xl font-serif font-bold text-stone-900 dark:text-white" data-lang="offers_title">Special Offers &amp; Packages</h2>
+        <div class="w-16 h-1 bg-rosegold-500 mx-auto rounded-full"></div>
+      </div>
+
+      <!-- Offers Grid Dynamic Render -->
+      <div id="offers-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Offers injected by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= EXQUISITE BANGLES SECTION ================= -->
+  <section id="bangles" class="py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="text-center space-y-3 mb-12">
+        <span class="text-xs uppercase tracking-widest text-rosegold-600 dark:text-rosegold-400 font-bold" data-lang="bangles_subtitle">Exquisite Handcrafted Designs</span>
+        <h2 class="text-3xl md:text-4xl font-serif font-bold text-stone-900 dark:text-white mt-1" data-lang="bangles_title">Bangles Collection</h2>
+        <div class="w-16 h-1 bg-rosegold-500 mx-auto rounded-full"></div>
+      </div>
+
+      <!-- Categories filter row -->
+      <div class="flex items-center justify-center gap-2 overflow-x-auto pb-4 mb-8 scroll-smooth custom-scrollbar" id="bangles-categories">
+        <!-- Dynamic chips injected here -->
+      </div>
+
+      <!-- Bangles Product Grid -->
+      <div id="bangles-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <!-- Dynamically rendered via localstorage -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PARLOUR SERVICES SECTION ================= -->
+  <section id="services" class="py-20 bg-rose-50/40 dark:bg-stone-950/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="text-center space-y-3 mb-16">
+        <h3 class="text-xs uppercase tracking-widest text-rosegold-600 dark:text-rosegold-400 font-bold" data-lang="services_subtitle">Pamper Yourself</h3>
+        <h2 class="text-3xl md:text-4xl font-serif font-bold text-stone-900 dark:text-white" data-lang="services_title">Beauty Parlour Services</h2>
+        <p class="text-stone-500 max-w-lg mx-auto text-sm" data-lang="services_desc">Tailored bridal services, hair therapy, skincare, cosmetics and custom temporary body art to reveal your brightest glow.</p>
+        <div class="w-16 h-1 bg-rosegold-500 mx-auto rounded-full"></div>
+      </div>
+
+      <!-- Services List Category Selectors -->
+      <div id="services-categories" class="flex justify-center gap-3 flex-wrap mb-10">
+        <!-- Filter chips dynamically rendered -->
+      </div>
+
+      <!-- Services Grid -->
+      <div id="services-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Services dynamically injected here -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BRIDAL BOOKING & APPOINTMENT MODAL ================= -->
+  <div id="booking-modal" class="fixed inset-0 bg-black/60 z-50 hidden backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-stone-900 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl border border-rose-100 dark:border-stone-800 animate-scaleUp">
+      <div class="rosegold-btn p-6 text-white flex justify-between items-center">
+        <div>
+          <h3 class="font-serif text-xl font-bold" data-lang="booking_modal_title">Book Appointment</h3>
+          <p class="text-xs text-white/80" data-lang="booking_modal_desc">Fill details to schedule with Meena</p>
+        </div>
+        <button onclick="closeBookingModal()" class="text-white hover:text-rose-100 text-xl font-bold">&times;</button>
+      </div>
+      <form id="booking-form" onsubmit="submitAppointment(event)" class="p-6 space-y-4">
+        <input type="hidden" id="booking-item-name" value="">
+        <input type="hidden" id="booking-item-type" value="Service">
+        
+        <div>
+          <label class="block text-xs font-semibold uppercase text-stone-500 dark:text-stone-400 mb-1" data-lang="form_name">Your Name</label>
+          <input type="text" id="book-name" required class="w-full px-4 py-2 rounded-lg border border-rosegold-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 focus:outline-none focus:ring-2 focus:ring-rosegold-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-stone-500 dark:text-stone-400 mb-1" data-lang="form_phone">Phone Number</label>
+          <input type="tel" id="book-phone" required class="w-full px-4 py-2 rounded-lg border border-rosegold-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 focus:outline-none focus:ring-2 focus:ring-rosegold-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-stone-500 dark:text-stone-400 mb-1" data-lang="form_date">Preferred Date &amp; Time</label>
+          <input type="datetime-local" id="book-date" required class="w-full px-4 py-2 rounded-lg border border-rosegold-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 focus:outline-none focus:ring-2 focus:ring-rosegold-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-stone-500 dark:text-stone-400 mb-1" data-lang="form_notes">Special Requests / Customize Requirements</label>
+          <textarea id="book-notes" rows="3" class="w-full px-4 py-2 rounded-lg border border-rosegold-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 focus:outline-none focus:ring-2 focus:ring-rosegold-500"></textarea>
+        </div>
+
+        <button type="submit" class="w-full py-3 rosegold-btn text-white font-semibold rounded-lg text-sm shadow-md flex items-center justify-center gap-2">
+          <i class="fa-brands fa-whatsapp text-lg"></i>
+          <span data-lang="form_submit_book">Send Booking to WhatsApp</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= PHOTO GALLERY ================= -->
+  <section id="gallery" class="py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Title -->
+      <div class="text-center space-y-3 mb-12">
+        <h3 class="text-xs uppercase tracking-widest text-rosegold-600 dark:text-rosegold-400 font-bold" data-lang="gallery_subtitle">Glimpses of Artistry</h3>
+        <h2 class="text-3xl md:text-4xl font-serif font-bold text-stone-900 dark:text-white" data-lang="gallery_title">Visual Gallery</h2>
+        <div class="w-16 h-1 bg-rosegold-500 mx-auto rounded-full"></div>
+      </div>
+
+      <!-- Photo Grid Content -->
+      <div id="gallery-photos" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <!-- Photo items from state -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= REVIEWS SECTION ================= -->
+  <section id="reviews" class="py-20 bg-rose-50/40 dark:bg-stone-950/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Title -->
+      <div class="text-center space-y-3 mb-12">
+        <h3 class="text-xs uppercase tracking-widest text-rosegold-600 dark:text-rosegold-400 font-bold" data-lang="reviews_subtitle">Loved by Families</h3>
+        <h2 class="text-3xl md:text-4xl font-serif font-bold text-stone-900 dark:text-white" data-lang="reviews_title">Customer Testimonials</h2>
+        <div class="w-16 h-1 bg-rosegold-500 mx-auto rounded-full"></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+        
+        <!-- Left: Review Aggregator card -->
+        <div class="bg-white dark:bg-stone-900 p-8 rounded-2xl shadow-xl border border-rose-100 dark:border-stone-800 space-y-6">
+          <h4 class="font-serif text-xl font-bold" data-lang="review_card_title">Add Your Experience</h4>
+          <p class="text-sm text-stone-500 dark:text-stone-400" data-lang="review_card_desc">We appreciate every rating! Share your makeover or bangle selection experience with everyone.</p>
+          
+          <form id="review-form" onsubmit="addCustomerReview(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold uppercase text-stone-500 mb-1" data-lang="review_form_name">Full Name</label>
+              <input type="text" id="rev-name" required class="w-full px-4 py-2 rounded-lg border border-rosegold-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 focus:ring-2 focus:ring-rosegold-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase text-stone-500 mb-1" data-lang="review_form_rating">Stars Rating</label>
+              <div class="flex items-center gap-2 text-2xl text-stone-300 dark:text-stone-700">
+                <i class="fa-solid fa-star cursor-pointer hover:text-gold" onclick="setFormStars(1)"></i>
+                <i class="fa-solid fa-star cursor-pointer hover:text-gold" onclick="setFormStars(2)"></i>
+                <i class="fa-solid fa-star cursor-pointer hover:text-gold" onclick="setFormStars(3)"></i>
+                <i class="fa-solid fa-star cursor-pointer hover:text-gold" onclick="setFormStars(4)"></i>
+                <i class="fa-solid fa-star cursor-pointer hover:text-gold" onclick="setFormStars(5)"></i>
+              </div>
+              <input type="hidden" id="rev-stars" value="5">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase text-stone-500 mb-1" data-lang="review_form_msg">Your Review Message</label>
+              <textarea id="rev-msg" rows="3" required class="w-full px-4 py-2 rounded-lg border border-rosegold-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 focus:ring-2 focus:ring-rosegold-500 focus:outline-none"></textarea>
+            </div>
+            <button type="submit" class="w-full py-2.5 rosegold-btn text-white font-semibold rounded-lg text-sm shadow">
+              <span data-lang="review_submit_btn">Publish Review</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Right: Reviews Display Scrollbox -->
+        <div class="lg:col-span-2 space-y-6 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar" id="reviews-list">
+          <!-- Dynamic reviews loop -->
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CONTACT, LOCATION & CALL/WA ================= -->
+  <section id="contact" class="py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Title -->
+      <div class="text-center space-y-3 mb-16">
+        <h3 class="text-xs uppercase tracking-widest text-rosegold-600 dark:text-rosegold-400 font-bold" data-lang="contact_subtitle">Visit Our Boutique</h3>
+        <h2 class="text-3xl md:text-4xl font-serif font-bold text-stone-900 dark:text-white" data-lang="contact_title">Get In Touch</h2>
+        <div class="w-16 h-1 bg-rosegold-500 mx-auto rounded-full"></div>
+      </div>
+
+      <!-- Premium Centered Combined Contact Card -->
+      <div class="max-w-3xl mx-auto bg-white dark:bg-stone-900 p-8 md:p-12 rounded-3xl shadow-xl border border-rose-100 dark:border-stone-800 space-y-8 animate-scaleUp">
+        <div class="text-center space-y-3">
+          <h4 class="font-serif text-2xl md:text-3xl font-bold text-stone-900 dark:text-white" data-lang="contact_left_title">Meena Parlour &amp; Designer Bangles</h4>
+          <p class="text-stone-500 dark:text-stone-400 text-sm max-w-xl mx-auto leading-relaxed" data-lang="contact_left_desc">Located centrally in Narayankhed, we curate premium bespoke glass and stone threads with specialized wedding beauty care.</p>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4 border-t border-rose-50 dark:border-stone-800 text-center md:text-left">
+          
+          <!-- Address Block -->
+          <div class="space-y-3 flex flex-col items-center md:items-start">
+            <div class="w-11 h-11 rounded-full bg-rose-100 dark:bg-rose-950 flex items-center justify-center text-rosegold-500 shrink-0">
+              <i class="fa-solid fa-location-dot text-lg"></i>
+            </div>
+            <div>
+              <h5 class="font-semibold text-sm uppercase tracking-wide" data-lang="info_addr">Boutique Address</h5>
+              <p class="text-sm text-stone-600 dark:text-stone-400 mt-2 leading-relaxed">మీనా బ్యాంగిల్ స్టోర్ &amp; బ్యూటీ పార్లర్, కరసుగుత్తి రోడ్, శుభవర షాపింగ్ మాల్ పక్కన, నారాయణఖేడ్, తెలంగాణ 502286</p>
+            </div>
+          </div>
+
+          <!-- Phone Block -->
+          <div class="space-y-3 flex flex-col items-center md:items-start">
+            <div class="w-11 h-11 rounded-full bg-rose-100 dark:bg-rose-950 flex items-center justify-center text-rosegold-500 shrink-0">
+              <i class="fa-solid fa-phone text-lg"></i>
+            </div>
+            <div>
+              <h5 class="font-semibold text-sm uppercase tracking-wide" data-lang="info_phone">Call Or Inquire</h5>
+              <p class="text-sm text-stone-600 dark:text-stone-400 mt-2 font-medium tracking-wider">+91 9515781143</p>
+            </div>
+          </div>
+
+          <!-- Hours Block -->
+          <div class="space-y-3 flex flex-col items-center md:items-start">
+            <div class="w-11 h-11 rounded-full bg-rose-100 dark:bg-rose-950 flex items-center justify-center text-rosegold-500 shrink-0">
+              <i class="fa-solid fa-clock text-lg"></i>
+            </div>
+            <div>
+              <h5 class="font-semibold text-sm uppercase tracking-wide" data-lang="info_hours">Working Hours</h5>
+              <p class="text-sm text-stone-600 dark:text-stone-400 mt-2">ఉదయం 10:00 – రాత్రి 09:00 (ప్రతిరోజు)</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Integrated Interactive Map Directions & Quick Actions Buttons -->
+        <div class="space-y-4 pt-6 border-t border-rose-50 dark:border-stone-800">
+          
+          <!-- Primary Map Link Button -->
+          <a href="https://www.google.com/maps/dir/?api=1&destination=Meena+Bangle+Store+Karasugutti+Road+Narayankhed" target="_blank" class="w-full py-4 rosegold-btn text-white font-bold rounded-xl text-center flex items-center justify-center gap-3 shadow-md hover:shadow-lg hover:scale-[1.01] transition-all">
+            <i class="fa-solid fa-map-location-dot text-xl"></i>
+            <span>గూగుల్ మ్యాప్స్ లో దారి చూడండి (Get Directions on Google Maps)</span>
+          </a>
+
+          <!-- Quick WhatsApp / Call Side-by-Side row -->
+          <div class="grid grid-cols-2 gap-4">
+            <a href="https://wa.me/919515781143?text=Hi%20Meena%20Bangles,%20I%20want%20to%20know%20about%20your%20bridal%20makeovers%20and%20bangles." target="_blank" class="bg-[#25D366] hover:bg-[#20ba5a] text-white font-semibold py-3.5 px-4 rounded-xl text-sm text-center flex items-center justify-center gap-2 transition-all shadow-md">
+              <i class="fa-brands fa-whatsapp text-lg"></i> WhatsApp
+            </a>
+            <a href="tel:+919515781143" class="bg-stone-900 dark:bg-stone-850 hover:bg-stone-800 dark:hover:bg-stone-750 text-white font-semibold py-3.5 px-4 rounded-xl text-sm text-center flex items-center justify-center gap-2 transition-all shadow-md">
+              <i class="fa-solid fa-phone"></i> Call Now
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FLOATING ACTION ASSISTANTS ================= -->
+  <div class="fixed bottom-6 right-6 z-30 flex flex-col gap-3">
+    <!-- Float WhatsApp Support -->
+    <a href="https://wa.me/919515781143" target="_blank" class="w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center text-white text-3xl shadow-xl hover:scale-110 transition-transform active:scale-95" title="WhatsApp Customer Care">
+      <i class="fa-brands fa-whatsapp"></i>
+    </a>
+    <!-- Float Phone Support -->
+    <a href="tel:+919515781143" class="w-14 h-14 bg-rosegold-500 rounded-full flex items-center justify-center text-white text-2xl shadow-xl hover:scale-110 transition-transform active:scale-95" title="Call Us Direct">
+      <i class="fa-solid fa-phone"></i>
+    </a>
+  </div>
+
+  <!-- ================= ADMIN LOGIN & MANAGEMENT PANEL OVERLAY ================= -->
+  <div id="admin-modal" class="fixed inset-0 bg-black/80 z-50 hidden backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-stone-900 w-full max-w-5xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      
+      <!-- Admin Header -->
+      <div class="bg-stone-900 text-white p-6 flex justify-between items-center border-b border-rose-950/20">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-rosegold-500 flex items-center justify-center">
+            <i class="fa-solid fa-user-shield text-xl"></i>
+          </div>
+          <div>
+            <h3 class="font-serif text-base sm:text-lg font-bold">Meena Administration Control / యజమాని నియంత్రణ ప్యానెల్</h3>
+            <p class="text-[11px] text-stone-400 font-semibold tracking-wide">Manage Bangles, Services, Offers, Photos &amp; Reviews / గాజులు, సర్వీసులు, ఆఫర్లు &amp; రివ్యూల నిర్వహణ</p>
+          </div>
+        </div>
+        <button onclick="closeAdminPanel()" class="text-stone-400 hover:text-white text-2xl font-bold">&times;</button>
+      </div>
+
+      <!-- Login View (If NOT logged in - passcode only) -->
+      <div id="admin-login-view" class="p-8 max-w-md mx-auto my-12 w-full space-y-6">
+        <div class="text-center">
+          <i class="fa-solid fa-lock text-4xl text-rosegold-500 mb-2"></i>
+          <h4 class="font-serif text-xl font-bold" id="auth-header-label">Authorization Required / లాగిన్ కావాలి</h4>
+          <p class="text-xs text-stone-500">Sign in with administrative passcode. / అడ్మిన్ పాస్‌కోడ్‌తో లాగిన్ అవ్వండి.</p>
+        </div>
+        
+        <form onsubmit="authenticateAdmin(event)" class="space-y-4" id="login-form-element">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Passcode / పాస్‌కోడ్</label>
+            <input type="password" id="admin-pass-input" placeholder="Default is admin123" required class="w-full px-4 py-2.5 rounded-lg border border-rosegold-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-rosegold-500">
+          </div>
+          <button type="submit" class="w-full py-3 rosegold-btn text-white font-semibold rounded-lg text-sm shadow-md">
+            Unlock Console / అన్‌లాక్ చేయండి
+          </button>
+        </form>
+      </div>
+
+      <!-- Dashboard View (If authenticated successfully) -->
+      <div id="admin-dashboard-view" class="hidden flex-1 flex flex-col lg:flex-row overflow-hidden font-sans">
+        
+        <!-- Dashboard Sidebar Navigation -->
+        <div class="w-full lg:w-64 bg-stone-50 dark:bg-stone-950 p-4 border-r border-stone-200 dark:border-stone-800 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible shrink-0 text-xs">
+          <button onclick="switchAdminTab('bangles')" id="admin-btn-bangles" class="admin-tab-btn active w-full py-2.5 px-4 rounded-lg text-left font-bold flex items-center gap-3 bg-rosegold-100 text-rosegold-800 dark:bg-stone-800 dark:text-white shrink-0">
+            <i class="fa-solid fa-ring"></i> Bangles / గాజుల స్టాక్
+          </button>
+          <button onclick="switchAdminTab('services')" id="admin-btn-services" class="admin-tab-btn w-full py-2.5 px-4 rounded-lg text-left font-bold flex items-center gap-3 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800 shrink-0">
+            <i class="fa-solid fa-spa"></i> Services / బ్యూటీ సర్వీసులు
+          </button>
+          <button onclick="switchAdminTab('offers')" id="admin-btn-offers" class="admin-tab-btn w-full py-2.5 px-4 rounded-lg text-left font-bold flex items-center gap-3 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800 shrink-0">
+            <i class="fa-solid fa-tag"></i> Active Offers / ఆఫర్లు
+          </button>
+          <button onclick="switchAdminTab('gallery')" id="admin-btn-gallery" class="admin-tab-btn w-full py-2.5 px-4 rounded-lg text-left font-bold flex items-center gap-3 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800 shrink-0">
+            <i class="fa-regular fa-images"></i> Gallery / ఫోటోలు
+          </button>
+          <button onclick="switchAdminTab('reviews')" id="admin-btn-reviews" class="admin-tab-btn w-full py-2.5 px-4 rounded-lg text-left font-bold flex items-center gap-3 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800 shrink-0">
+            <i class="fa-solid fa-comment-dots"></i> Manage Reviews / రివ్యూస్
+          </button>
+          <button onclick="switchAdminTab('settings')" id="admin-btn-settings" class="admin-tab-btn w-full py-2.5 px-4 rounded-lg text-left font-bold flex items-center gap-3 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800 shrink-0">
+            <i class="fa-solid fa-gears"></i> Security / సెక్యూరిటీ
+          </button>
+          
+          <button onclick="adminLogout()" class="mt-auto py-2 px-4 bg-rose-900 text-white font-bold rounded-lg flex items-center gap-3 self-start lg:w-full">
+            <i class="fa-solid fa-sign-out-alt"></i> Exit / లాగ్ అవుట్
+          </button>
+        </div>
+
+        <!-- Dashboard Content Screen -->
+        <div class="flex-1 p-6 overflow-y-auto custom-scrollbar bg-white dark:bg-stone-900 space-y-8">
+          
+          <!-- DASHBOARD STATISTICS ROW -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-gradient-to-tr from-rosegold-50 to-white dark:from-stone-950 dark:to-stone-900 border border-rosegold-200/50 dark:border-stone-800 rounded-xl p-4 shadow-sm flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg rosegold-btn flex items-center justify-center text-white"><i class="fa-regular fa-image text-lg"></i></div>
+              <div>
+                <span class="text-[10px] text-stone-500 font-bold uppercase tracking-wider block">Total Images / మొత్తం ఫోటోలు</span>
+                <span id="stat-total-images" class="text-xl font-bold font-serif text-stone-800 dark:text-white">0</span>
+              </div>
+            </div>
+            <div class="bg-gradient-to-tr from-rosegold-50 to-white dark:from-stone-950 dark:to-stone-900 border border-rosegold-200/50 dark:border-stone-800 rounded-xl p-4 shadow-sm flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-amber-500 text-white flex items-center justify-center"><i class="fa-regular fa-comment-dots text-lg"></i></div>
+              <div>
+                <span class="text-[10px] text-stone-500 font-bold uppercase tracking-wider block">Total Reviews / మొత్తం రివ్యూలు</span>
+                <span id="stat-total-reviews" class="text-xl font-bold font-serif text-stone-800 dark:text-white">0</span>
+              </div>
+            </div>
+            <div class="bg-gradient-to-tr from-rosegold-50 to-white dark:from-stone-950 dark:to-stone-900 border border-rosegold-200/50 dark:border-stone-800 rounded-xl p-4 shadow-sm flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-emerald-500 text-white flex items-center justify-center"><i class="fa-solid fa-list-check text-lg"></i></div>
+              <div>
+                <span class="text-[10px] text-stone-500 font-bold uppercase tracking-wider block">Total Posts / మొత్తం ఐటమ్స్</span>
+                <span id="stat-total-posts" class="text-xl font-bold font-serif text-stone-800 dark:text-white">0</span>
+              </div>
+            </div>
+            <div class="bg-gradient-to-tr from-red-50 to-white dark:from-stone-950 dark:to-stone-900 border border-red-200/50 dark:border-stone-800 rounded-xl p-4 shadow-sm flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-rose-900 text-white flex items-center justify-center"><i class="fa-solid fa-eye-slash text-lg"></i></div>
+              <div>
+                <span class="text-[10px] text-stone-500 font-bold uppercase tracking-wider block">Hidden Posts / దాచినవి</span>
+                <span id="stat-hidden-posts" class="text-xl font-bold font-serif text-stone-800 dark:text-white">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- BANGLES WORKSPACE -->
+          <div id="admin-tab-content-bangles" class="admin-panel-section space-y-8">
+            <div class="flex justify-between items-center border-b pb-4 border-stone-200 dark:border-stone-800">
+              <h4 class="font-serif text-sm sm:text-lg font-bold">Manage Bangles / గాజుల కలెక్షన్ల నిర్వహణ</h4>
+              <button onclick="openFormModal('bangle')" class="rosegold-btn text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> Add New / కొత్తది చేర్చు
+              </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-stone-100 dark:bg-stone-950 border-b border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400">
+                    <th class="p-3">Image / ఫోటో</th>
+                    <th class="p-3">Name / పేరు</th>
+                    <th class="p-3">Category / రకం</th>
+                    <th class="p-3">Price / ధర</th>
+                    <th class="p-3">Status / అందుబాటు</th>
+                    <th class="p-3">Visibility / కస్టమర్‌కి కనిపిస్తుందా</th>
+                    <th class="p-3 text-right">Actions / చర్యలు</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-bangles-table">
+                  <!-- dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SERVICES WORKSPACE -->
+          <div id="admin-tab-content-services" class="admin-panel-section hidden space-y-8">
+            <div class="flex justify-between items-center border-b pb-4 border-stone-200 dark:border-stone-800">
+              <h4 class="font-serif text-sm sm:text-lg font-bold">Manage Beauty Services / బ్యూటీ సర్వీసుల నిర్వహణ</h4>
+              <button onclick="openFormModal('service')" class="rosegold-btn text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> Add Service / కొత్త సర్వీస్ చేర్చు
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-stone-100 dark:bg-stone-950 border-b border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400">
+                    <th class="p-3">Service Name / పేరు</th>
+                    <th class="p-3">Category / విభాగం</th>
+                    <th class="p-3">Price / ప్రారంభ ధర</th>
+                    <th class="p-3">Duration / సమయం</th>
+                    <th class="p-3">Visibility / కస్టమర్‌కి కనిపిస్తుందా</th>
+                    <th class="p-3 text-right">Actions / చర్యలు</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-services-table">
+                  <!-- dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- OFFERS WORKSPACE -->
+          <div id="admin-tab-content-offers" class="admin-panel-section hidden space-y-8">
+            <div class="flex justify-between items-center border-b pb-4 border-stone-200 dark:border-stone-800">
+              <h4 class="font-serif text-sm sm:text-lg font-bold">Promo Offers / ప్రత్యేక డిస్కౌంట్ ఆఫర్లు</h4>
+              <button onclick="openFormModal('offer')" class="rosegold-btn text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> Add Offer / కొత్త ఆఫర్ చేర్చు
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-stone-100 dark:bg-stone-950 border-b border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400">
+                    <th class="p-3">Title / ఆఫర్ పేరు</th>
+                    <th class="p-3">Discount Details / కోడ్ వివరాలు</th>
+                    <th class="p-3">Validity / చివరి తేదీ</th>
+                    <th class="p-3">Visibility / కస్టమర్‌కి కనిపిస్తుందా</th>
+                    <th class="p-3 text-right">Actions / చర్యలు</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-offers-table">
+                  <!-- dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- MEDIA GALLERY WORKSPACE -->
+          <div id="admin-tab-content-gallery" class="admin-panel-section hidden space-y-8">
+            <div class="flex justify-between items-center border-b pb-4 border-stone-200 dark:border-stone-800">
+              <h4 class="font-serif text-sm sm:text-lg font-bold">Media Gallery Items / గ్యాలరీ ఫోటోలు</h4>
+              <button onclick="openFormModal('photo')" class="bg-rose-100 text-rose-800 hover:bg-rose-200 text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-2">
+                <i class="fa-regular fa-image"></i> Add Photo / కొత్త ఫోటో చేర్చు
+              </button>
+            </div>
+
+            <div class="border rounded-xl p-4 border-stone-200 dark:border-stone-850 space-y-4">
+              <h5 class="font-semibold text-sm uppercase text-rose-500">Photo Catalog / మొత్తం గ్యాలరీ ఫోటోలు</h5>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="bg-stone-100 dark:bg-stone-950 border-b text-stone-600 dark:text-stone-400">
+                      <th class="p-3">Image / ఫోటో</th>
+                      <th class="p-3">Caption / టైటిల్</th>
+                      <th class="p-3">Visibility / కనిపిస్తుందా</th>
+                      <th class="p-3 text-right">Action / చర్యలు</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-photos-table"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- REVIEWS MANAGEMENT WORKSPACE -->
+          <div id="admin-tab-content-reviews" class="admin-panel-section hidden space-y-8">
+            <div class="flex justify-between items-center border-b pb-4 border-stone-200 dark:border-stone-800">
+              <h4 class="font-serif text-sm sm:text-lg font-bold">Review &amp; Testimonial Moderation / కస్టమర్ రివ్యూల నియంత్రణ</h4>
+              <span id="pending-reviews-badge" class="bg-amber-100 dark:bg-stone-950 text-amber-800 dark:text-amber-400 text-xs font-semibold px-3 py-1 rounded-full border border-amber-300">0 Pending Approval</span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-stone-100 dark:bg-stone-950 border-b border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400">
+                    <th class="p-3">User / కస్టమర్ పేరు</th>
+                    <th class="p-3">Rating & Comment / రేటింగ్ మరియు కామెంట్</th>
+                    <th class="p-3">Moderation Status / ఆమోదం</th>
+                    <th class="p-3">Meena's Response / మీనా గారి సమాధానం</th>
+                    <th class="p-3 text-right">Actions / చర్యలు</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-reviews-table"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SECURITY SETTINGS SECTION -->
+          <div id="admin-tab-content-settings" class="admin-panel-section hidden space-y-8">
+            <div class="border-b pb-4 border-stone-200 dark:border-stone-800">
+              <h4 class="font-serif text-sm sm:text-lg font-bold">Admin Security & Settings / అడ్మిన్ పాస్‌వర్డ్ మార్పు</h4>
+              <p class="text-xs text-stone-500">Configure administrative security recovery options, passcodes, or force sessions reset.</p>
+            </div>
+
+            <div class="max-w-md">
+              <!-- Credentials Form -->
+              <div class="bg-stone-50 dark:bg-stone-950 p-6 rounded-xl border border-stone-200/60 dark:border-stone-805 space-y-4">
+                <h5 class="font-serif font-bold text-sm text-rosegold-600 dark:text-rosegold-400 flex items-center gap-2">
+                  <i class="fa-solid fa-user-pen"></i> Update Passcode / కొత్త అడ్మిన్ పాస్‌కోడ్
+                </h5>
+                <form onsubmit="updateAdminCredentials(event)" class="space-y-4 text-xs">
+                  <div>
+                    <label class="block font-semibold text-stone-500 mb-1">New Secure Password / Passcode (కొత్త పాస్‌కోడ్ టైప్ చేయండి)</label>
+                    <input type="password" id="settings-new-pass" required placeholder="Enter new passcode" class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-stone-900 dark:border-stone-800 text-stone-800 dark:text-white">
+                  </div>
+                  <button type="submit" class="w-full py-2.5 rosegold-btn text-white font-semibold rounded-lg shadow">
+                    Save Passcode / పాస్‌కోడ్ సేవ్ చేయి
+                  </button>
+                </form>
+              </div>
+            </div>
+            
+            <!-- Force Multi-device Lockout -->
+            <div class="p-6 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 rounded-xl space-y-4">
+              <h5 class="font-serif font-bold text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+                <i class="fa-solid fa-radiation animate-pulse"></i> Administrative Emergencies
+              </h5>
+              <p class="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">If you suspect unauthorized access on another system, instantly disconnect sessions. This will log out all other active device tokens immediately.</p>
+              <button onclick="terminateAllSessions()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow transition-all">
+                Force Multi-Device Logout / ఇతర అన్ని డివైస్‌ల నుండి లాగ్ అవుట్ చేయి
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= GENERIC CRUD FORM CREATOR MODAL ================= -->
+  <div id="crud-modal" class="fixed inset-0 bg-black/70 z-[60] hidden backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-stone-900 w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-rose-100 dark:border-stone-800 max-h-[90vh] flex flex-col">
+      <div class="rosegold-btn p-5 text-white flex justify-between items-center">
+        <h4 id="crud-modal-title" class="font-serif text-lg font-bold">Add/Edit Content</h4>
+        <button onclick="closeCrudModal()" class="text-white hover:text-rose-100 text-xl font-bold">&times;</button>
+      </div>
+      
+      <!-- Upload preview & Form layout -->
+      <form id="crud-form" onsubmit="handleCrudSubmit(event)" class="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
+        <input type="hidden" id="crud-item-id">
+        <input type="hidden" id="crud-mode"> <!-- 'add' or 'edit' -->
+        <input type="hidden" id="crud-target"> <!-- 'bangle', 'service', 'offer', 'photo', 'review-reply' -->
+
+        <!-- Dynamic Form Fields will be inserted dynamically here -->
+        <div id="crud-fields" class="space-y-4"></div>
+
+        <button type="submit" class="w-full py-3 rosegold-btn text-white font-semibold rounded-lg text-sm shadow-md">
+          Save Settings &amp; Publish / विवरणాలు సేవ్ చేయి &amp; వెబ్‌సైట్‌లో ప్రదర్శించు
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= BEAUTIFUL RICH FOOTER ================= -->
+  <footer class="bg-stone-950 text-stone-300 pt-20 pb-8 border-t border-rose-950/60 font-sans">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+      
+      <!-- Col 1: About Boutique -->
+      <div class="space-y-6">
+        <a href="#" class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full rosegold-btn flex items-center justify-center text-white text-lg font-serif">
+            M
+          </div>
+          <div>
+            <h1 class="text-xl font-serif font-bold tracking-wider text-white">Meena</h1>
+            <p class="text-[8px] uppercase tracking-[0.2em] text-stone-400 font-semibold">Bangles & Beauty Parlour</p>
+          </div>
+        </a>
+        <p class="text-sm text-stone-400 leading-relaxed" data-lang="footer_about">Premium boutique bringing beauty elegance & luxury designer traditional bangles to make every special occasion absolutely memorable.</p>
+        
+        <div class="flex gap-4">
+          <a href="https://www.instagram.com" target="_blank" class="w-9 h-9 rounded-full bg-stone-900 flex items-center justify-center hover:bg-rosegold-500 hover:text-white transition-colors" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+        </div>
+      </div>
+
+      <!-- Col 2: Quick Links -->
+      <div class="space-y-6">
+        <h4 class="text-white font-serif text-lg font-semibold tracking-wide" data-lang="footer_links_title">Quick Access</h4>
+        <div class="grid grid-cols-1 gap-3 text-sm">
+          <a href="#hero" class="hover:text-rosegold-300 transition-colors" data-lang="nav_home">Home</a>
+          <a href="#bangles" class="hover:text-rosegold-300 transition-colors" data-lang="nav_bangles">Bangles Collection</a>
+          <a href="#services" class="hover:text-rosegold-300 transition-colors" data-lang="nav_services">Parlour Services</a>
+          <a href="#gallery" class="hover:text-rosegold-300 transition-colors" data-lang="nav_gallery">Visual Gallery</a>
+          <a href="#offers" class="hover:text-rosegold-300 transition-colors" data-lang="nav_offers">Special Offers</a>
+        </div>
+      </div>
+
+      <!-- Col 3: Parlour Favourites -->
+      <div class="space-y-6">
+        <h4 class="text-white font-serif text-lg font-semibold tracking-wide" data-lang="footer_services_title">Popular Services</h4>
+        <div class="grid grid-cols-1 gap-3 text-sm text-stone-400">
+          <span class="hover:text-white transition-colors">Bridal Cosmetic Makeover</span>
+          <span class="hover:text-white transition-colors">Custom Silk Thread Bangles</span>
+          <span class="hover:text-white transition-colors">Stone & Glass Art Bangles</span>
+          <span class="hover:text-white transition-colors">Traditional Mehendi Art</span>
+          <span class="hover:text-white transition-colors">Facials &amp; Skin Care Therapy</span>
+        </div>
+      </div>
+
+      <!-- Col 4: Newsletter -> WhatsApp Updates -->
+      <div class="space-y-6">
+        <h4 class="text-white font-serif text-lg font-semibold tracking-wide" data-lang="footer_newsletter_title">Join Meena Family</h4>
+        <p class="text-sm text-stone-400 leading-relaxed" data-lang="footer_newsletter_desc">Receive notifications of special holiday coupons and premium limited edition bangle stocks directly to your email.</p>
+        <form onsubmit="handleNewsletterSubmit(event)" class="relative">
+          <input type="tel" id="news-phone" required placeholder="Enter WhatsApp Number" class="w-full bg-stone-900 border border-stone-800 text-stone-300 placeholder-stone-600 rounded-lg py-3 px-4 text-xs focus:outline-none focus:ring-1 focus:ring-rosegold-500">
+          <button type="submit" class="absolute right-2 top-1.5 bottom-1.5 px-4 bg-rosegold-500 hover:bg-rosegold-600 text-white rounded-md text-xs font-semibold transition-all">Join</button>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- Legal Area -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-stone-900 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-stone-500">
+      <p>&copy; <span id="current-year"></span> Meena Bangles &amp; Beauty Parlour. All rights reserved.</p>
+      <div class="flex gap-4">
+        <span class="hover:text-white cursor-pointer">Privacy Policy</span>
+        <span class="hover:text-white cursor-pointer">Terms &amp; Conditions</span>
+        <span onclick="openAdminPanel()" class="hover:text-rosegold-300 font-semibold cursor-pointer flex items-center gap-1">
+          <i class="fa-solid fa-user-gear"></i> Administration Access
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= VANILLA JAVASCRIPT APP ARCHITECTURE ================= -->
+  <script>
+    // System variables and standard templates
+    const PLACEHOLDER_BANGLE = "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=600&auto=format&fit=crop";
+    const PLACEHOLDER_SERVICE = "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=600&auto=format&fit=crop";
+    const PLACEHOLDER_PHOTO = "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop";
+
+    // DEFAULT DATA - Triggered if LocalStorage is empty
+    const DEFAULT_BANGLES = [
+      { id: 'b1', name_en: 'Traditional Red Silk Bridal Bangles', name_te: 'సాంప్రదాయ ఎరుపు సిల్క్ గాజులు', category: 'Bridal Set', price: 1499, status: 'In Stock', desc_en: 'Premium handmade silk thread bangles decorated with beautiful kundan stones.', desc_te: 'అందమైన కుందన్ రాళ్లతో అలంకరించబడిన చేతితో తయారు చేసిన పట్టు దారాల గాజులు.', image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=600&auto=format&fit=crop', hidden: false },
+      { id: 'b2', name_en: 'Stone Studded Designer Glass Bangles', name_te: 'రాళ్ళు పొదిగిన గాజులు', category: 'Stone Work', price: 890, status: 'In Stock', desc_en: 'Graceful glass bangle sets with flawless micro-stone setting for parties.', desc_te: 'పార్టీల కొరకు మైక్రో స్టోన్ అమరికతో చక్కటి గ్లాస్ గాజుల సెట్.', image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=600&auto=format&fit=crop', hidden: false },
+      { id: 'b3', name_en: 'Gold Plated Traditional Kada Set', name_te: 'బంగారు పూత సాంప్రదాయ కడియాలు', category: 'Metal Bangles', price: 1999, status: 'In Stock', desc_en: 'Antique golden finish brass kada customized for South Indian weddings.', desc_te: 'దక్షిణ భారత వివాహాల కొరకు పురాతన బంగారు ముగింపు బ్రాస్ కడియాలు.', image: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=600&auto=format&fit=crop', hidden: false },
+      { id: 'b4', name_en: 'Multi-color Daily Wear Glass Bangles', name_te: 'మల్టీ కలర్ గాజులు', category: 'Daily Wear', price: 250, status: 'In Stock', desc_en: 'Comfortable & light-weight colorful set of glass bangles for everyday elegance.', desc_te: 'రోజువారీ ఉపయోగం కొరకు తేలికపాటి రంగురంగుల గాజుల సెట్.', image: 'https://images.unsplash.com/photo-1621646733642-e08df050f835?q=80&w=600&auto=format&fit=crop', hidden: false }
+    ];
+
+    const DEFAULT_SERVICES = [
+      { id: 's1', name_en: 'Bridal HD Cosmetics & Makeover', name_te: 'పెళ్లికూతురు హెచ్‌డి మేకప్', category: 'Bridal Makeover', price: 12500, duration: '4 Hours', desc_en: 'Flawless camera-ready high-definition makeover customized to your bridal dress.', desc_te: 'మీ పెళ్లి దుస్తులకు సరిపోయేలా అత్యుత్తమ కెమెరా-సిద్ధంగా ఉండే హై-డెఫినిషన్ మేక్ఓవర్.', image: PLACEHOLDER_SERVICE, hidden: false },
+      { id: 's2', name_en: 'Signature Hair spa & Protein Therapy', name_te: 'హెయిర్ స్పా & ప్రోటీన్ థెరపీ', category: 'Hair Styling', price: 2200, duration: '90 Mins', desc_en: 'Deep nourishing hair spa treatment using natural protein oils for ultimate silkiness.', desc_te: 'అల్టిమేట్ సిల్కినెస్ కోసం సహజ ప్రోటీన్ నూనెలను ఉపయోగించే హెయిర్ స్పా చికిత్స.', image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=600&auto=format&fit=crop', hidden: false },
+      { id: 's3', name_en: 'Full Hand Bridal Arabic Mehendi', name_te: 'అరబిక్ మెహందీ డిజైన్', category: 'Mehendi Art', price: 4500, duration: '3 Hours', desc_en: 'Intricate classic Arabic and traditional Indian styles from hands to elbows.', desc_te: 'చేతుల నుండి మోచేతుల వరకు క్లాసిక్ అరబిక్ మరియు సాంప్రదాయ డిజైన్లు.', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600&auto=format&fit=crop', hidden: false },
+      { id: 's4', name_en: 'Luxury Rose Glow Gold Facial', name_te: 'లగ్జరీ రోజ్ గోల్డ్ ఫేషియల్', category: 'Facials & Skincare', price: 1800, duration: '60 Mins', desc_en: 'Exfoliating gold dust facial that restores youthful elasticity and rosy glow instantly.', desc_te: 'యువతరం కాంతిని మరియు గులాబీ రంగు గ్లోను తక్షణమే పునరుద్ధరించే గోల్డ్ ఫేషియల్.', image: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?q=80&w=600&auto=format&fit=crop', hidden: false }
+    ];
+
+    const DEFAULT_OFFERS = [
+      { id: 'o1', title_en: 'Sankranti Wedding Special', title_te: 'సంక్రాంతి పెళ్లి కాంబో ఆఫర్', desc_en: 'Get Flat 15% Off on complete Bridal Makeover + FREE Matching Kundan Silk Bangle Set!', desc_te: 'పెళ్లికూతురు మేకప్ ప్యాకేజీపై 15% తగ్గింపు మరియు ఉచిత మ్యాచింగ్ కుందన్ గాజుల సెట్ పొందండి!', code: 'SANKRANTI15', discount: '15% Off', validity: 'Valid till 31 Jan', hidden: false },
+      { id: 'o2', title_en: 'Weekend Parlour Indulgence', title_te: 'వీకెండ్ బ్యూటీ ఆఫర్', desc_en: 'Book any Facial & Hair Spa combo and get custom Thread Bangles worth ₹300 for free.', desc_te: 'ఏదైనా ఫేషియల్ & హెయిర్ స్పా కాంబోను బుక్ చేసుకోండి మరియు ₹300 విలువైన త్రెడ్ గాజులను ఉచితంగా పొందండి.', code: 'WEEKENDSPA', discount: 'Free Gift', validity: 'Sat & Sun Only', hidden: false }
+    ];
+
+    const DEFAULT_PHOTOS = [
+      { id: 'gp1', caption: 'Elegant Red Bridal Bangle Set with Kundan stones', url: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=600&auto=format&fit=crop', hidden: false },
+      { id: 'gp2', caption: 'Beautiful South Indian Bride makeover close-up', url: 'https://images.unsplash.com/photo-1610030469668-93535c17b6b3?q=80&w=600&auto=format&fit=crop', hidden: false },
+      { id: 'gp3', caption: 'Intricate custom bridal Arabic Mehendi design', url: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600&auto=format&fit=crop', hidden: false },
+      { id: 'gp4', caption: 'Bespoke silk thread bangles selection in progress', url: PLACEHOLDER_PHOTO, hidden: false }
+    ];
+
+    const DEFAULT_REVIEWS = [
+      { id: 'r1', name: 'Saritha Reddy', stars: 5, msg: 'Meena did an absolutely phenomenal job for my bridal makeover! The makeup stayed flawless all night and everyone praised my customized glass bangles.', date: '2026-05-15', approved: true, reply: 'Thank you Saritha for your lovely words!', hidden: false },
+      { id: 'r2', name: 'Kalyani Rao', stars: 5, msg: 'The silk thread bangles matches perfectly with my sarees. Extremely detailed and high quality work. Highly recommended for family events!', date: '2026-06-01', approved: true, reply: '', hidden: false }
+    ];
+
+    // TRANSLATIONS DICTIONARY (English & Telugu)
+    const DICTIONARY = {
+      en: {
+        nav_home: "Home",
+        nav_bangles: "Bangles Collection",
+        nav_services: "Parlour Services",
+        nav_gallery: "Gallery",
+        nav_offers: "Special Offers",
+        nav_reviews: "Reviews",
+        nav_contact: "Contact Us",
+        hero_badge: "Bespoke Bridal Elegance",
+        hero_title_1: "Enhance Your Elegance",
+        hero_title_2: "& Premium Beauty Care",
+        hero_desc: "Step into a world of custom design. Discover elegant handcrafted glass, stone, and thread bangles paired with signature cosmetology services tailored perfectly for you by Meena.",
+        hero_btn_parlour: "Book Parlour Service",
+        hero_btn_bangles: "Explore Bangles",
+        trust_bangles: "Bangles Models",
+        trust_brides: "Happy Brides",
+        trust_rating: "Rating",
+        hero_gfx_text: "Traditional Elegance Meets Modern Glow",
+        hero_gfx_bangles: "Designer Bangles",
+        hero_gfx_parlour: "Exquisite Makeovers",
+        offers_subtitle: "Festive Celebrations",
+        offers_title: "Active Special Offers",
+        bangles_subtitle: "Handcrafted Exquisite Designs",
+        bangles_title: "Bangles Collection",
+        services_subtitle: "Pamper Yourself",
+        services_title: "Parlour Services",
+        services_desc: "Indulge in personalized beauty treatments including hair care, facials, skin glow therapy, bridal cosmetic makeovers and body art designed exclusively for your special occasions.",
+        booking_modal_title: "Book Appointment",
+        booking_modal_desc: "Fill in details to instantly coordinate with Meena",
+        form_name: "Your Full Name",
+        form_phone: "Contact Phone Number",
+        form_date: "Preferred Appointment Date & Time",
+        form_notes: "Special Requests / Bangle Size / Custom Instructions",
+        form_submit_book: "Send Booking to WhatsApp",
+        gallery_subtitle: "Glimpses of Artistry",
+        gallery_title: "Visual Gallery",
+        reviews_subtitle: "Client Testimonials",
+        reviews_title: "Loved by Families",
+        review_card_title: "Share Your Experience",
+        review_card_desc: "We value your reviews! All reviews are published on Meena's website after quick administrative approval.",
+        review_form_name: "Your Name",
+        review_form_rating: "Stars Rating",
+        review_form_msg: "Write your feedback...",
+        review_submit_btn: "Publish Testimonial",
+        contact_subtitle: "Visit Our Boutique",
+        contact_title: "Get In Touch",
+        contact_left_title: "Meena Bangle Store & Beauty Parlour",
+        contact_left_desc: "Conveniently located at Karasugutti Road, Narayankhed. We offer bespoke traditional bangles matching design and exclusive makeover programs.",
+        info_addr: "Our Boutique Address",
+        info_phone: "Call or Inquire",
+        info_hours: "Boutique Working Hours",
+        footer_about: "Premium bridal boutique bringing custom design aesthetics and luxury makeup procedures to make your memorable moments shine brighter.",
+        footer_links_title: "Quick Access",
+        footer_services_title: "Popular Services",
+        footer_newsletter_title: "Get Updates on WhatsApp",
+        footer_newsletter_desc: "Enter your WhatsApp mobile number to directly receive catalogs of our latest bangle models and wedding package updates.",
+        admin_login_required: "Administration Login",
+      },
+      te: {
+        nav_home: "హోమ్",
+        nav_bangles: "గాజుల కలెక్షన్",
+        nav_services: "పార్లర్ సేవలు",
+        nav_gallery: "గ్యాలరీ",
+        nav_offers: "ప్రత్యేక ఆఫర్లు",
+        nav_reviews: "రివ్యూస్",
+        nav_contact: "సంప్రదించండి",
+        hero_badge: "ప్రత్యేక పెళ్లికూతురు అలంకరణ",
+        hero_title_1: "మీ అందాన్ని మరింత రెట్టింపు చేసుకోండి",
+        hero_title_2: "& ప్రీమియం బ్యూటీ కేర్",
+        hero_desc: "చేతితో రూపొందించిన పట్టు దారాల గాజులు, స్టోన్ వర్క్ మరియు గాజుల కలెక్షన్‌తో పాటు మీ కోసం మీనా చేత ప్రత్యేకంగా చేయబడే బ్యూటీ పార్లర్ సేవలను ఇక్కడ పొందండి.",
+        hero_btn_parlour: "పార్లర్ సర్వీస్ బుక్ చేయండి",
+        hero_btn_bangles: "గాజుల కలెక్షన్ చూడండి",
+        trust_bangles: "గాజుల మోడల్స్",
+        trust_brides: "సంతోషకరమైన పెళ్లికూతుర్లు",
+        trust_rating: "రేటింగ్",
+        hero_gfx_text: "సాంప్రదాయ అందం మరియు ఆధునిక కాంతి కలయిక",
+        hero_gfx_bangles: "డిజైనర్ గాజులు",
+        hero_gfx_parlour: "అద్భుతమైన మేకప్",
+        offers_subtitle: "పండుగ సెలబ్రేషన్స్",
+        offers_title: "ప్రస్తుత ఆఫర్లు",
+        bangles_subtitle: "చేతితో తయారు చేసిన అద్భుతమైన డిజైన్లు",
+        bangles_title: "గాజుల కలెక్షన్",
+        services_subtitle: "మిమ్మల్ని మీరు సంరక్షించుకోండి",
+        services_title: "బ్యూటీ పార్లర్ సేవలు",
+        services_desc: "మీకు ఇష్టమైన బ్యూటీ సర్వీసెస్, హెయిర్ కేర్, బ్రైడల్ మేకప్ ప్యాకేజీలు మరియు మెహందీ డిజైన్లను ఇక్కడ బుక్ చేసుకోండి.",
+        booking_modal_title: "అపాయింట్‌మెంట్ బుక్ చేయండి",
+        booking_modal_desc: "మీనాతో నేరుగా మాట్లాడటానికి వివరాలను నమోదు చేయండి",
+        form_name: "మీ పూర్తి పేరు",
+        form_phone: "మొబైల్ నంబర్",
+        form_date: "అపాయింట్‌మెంట్ తేదీ & సమయం",
+        form_notes: "ప్రత్యేక అవసరాలు / గాజుల సైజు వివరాలు",
+        form_submit_book: "వాట్సాప్ ద్వారా బుక్ చేయండి",
+        gallery_subtitle: "కళాఖండాల వీక్షణం",
+        gallery_title: "ఫోటో గ్యాలరీ",
+        reviews_subtitle: "కస్టమర్ల అభిప్రాయం",
+        reviews_title: "వినియోగదారుల ఆదరణ",
+        review_card_title: "మీ అనుభవాన్ని తెలియజేయండి",
+        review_card_desc: "మీ అనుభవాలు మాకు ఎంతో విలువైనవి. మీ సమీక్షలు సమీక్షకుడి ఆమోదం తర్వాత పబ్లిష్ చేయబడతాయి.",
+        review_form_name: "మీ పేరు",
+        review_form_rating: "స్టార్ రేటింగ్",
+        review_form_msg: "మీ అభిప్రాయాన్ని రాయండి...",
+        review_submit_btn: "రివ్యూను పబ్లిష్ చేయండి",
+        contact_subtitle: "మా బొటిక్ సందర్శించండి",
+        contact_title: "కలిసి మాట్లాడదాం",
+        contact_left_title: "మీనా బ్యాంగిల్ స్టోర్ & బ్యూటీ పార్లర్",
+        contact_left_desc: "నారాయణఖేడ్ కరసుగుత్తి రోడ్‌లో ఉన్న మా షోరూమ్‌ను నేరుగా సందర్శించి బెస్ట్ పట్టుదారాల గాజులను ఎంచుకోండి.",
+        info_addr: "షోరూమ్ చిరునామా",
+        info_phone: "ఫోన్ కాల్ చేయండి",
+        info_hours: "పని చేయు సమయం",
+        footer_about: "మీ మరుపురాని సందర్భాలను మరింత ప్రకాశవంతంగా మార్చడానికి ప్రీమియం డిజైనర్ గాజులు మరియు మేకప్ ప్యాకేజీలను మీనా బొటిక్ అందిస్తుంది.",
+        footer_links_title: "త్వరిత లింకులు",
+        footer_services_title: "ప్రముఖ సేవలు",
+        footer_newsletter_title: "వాట్సాప్ అప్‌డేట్స్",
+        footer_newsletter_desc: "కొత్త మోడల్ గాజులు మరియు పండుగ ఆఫర్ల వివరాలు నేరుగా మీ ఆండ్రాయిడ్ లేదా ఐఫోన్ వాట్సాప్‌కు పొందడానికి మీ వాట్సాప్ నెంబర్ ఇక్కడ నమోదు చేయండి.",
+        admin_login_required: "అడ్మిన్ లాగిన్",
+      }
+    };
+
+    // STATE CONTROLLER
+    let state = {
+      lang: 'en',
+      darkMode: false,
+      adminAuthenticated: false,
+      currentAdminTab: 'bangles',
+      starsSelected: 5,
+      bangles: [],
+      services: [],
+      offers: [],
+      photos: [],
+      reviews: []
+    };
+
+    // Real Firebase & fallback secure LocalStorage Auth Configs
+    let firebaseAuth = null;
+    let useFirebase = false;
+
+    // INIT METHOD
+    window.onload = function() {
+      // Setup default configuration for localized security context if Firebase setup is not supplied
+      if (!localStorage.getItem('meena_admin_auth')) {
+        localStorage.setItem('meena_admin_auth', JSON.stringify({
+          email: 'admin@meena.com',
+          password: 'admin123',
+          securityQuestion: 'Who is your favourite goddess?',
+          securityAnswer: 'Meenakshi'
+        }));
+      }
+
+      // Try initializing Firebase Auth
+      try {
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+          const config = JSON.parse(__firebase_config);
+          firebase.initializeApp(config);
+          firebaseAuth = firebase.auth();
+          useFirebase = true;
+          console.log("Firebase Auth initialized successfully.");
+        }
+      } catch (e) {
+        console.warn("Firebase Config not configured, running secure LocalStorage Auth framework:", e);
+      }
+
+      // Initialize LocalStorage variables if empty
+      if (!localStorage.getItem('meena_bangles')) {
+        localStorage.setItem('meena_bangles', JSON.stringify(DEFAULT_BANGLES));
+        localStorage.setItem('meena_services', JSON.stringify(DEFAULT_SERVICES));
+        localStorage.setItem('meena_offers', JSON.stringify(DEFAULT_OFFERS));
+        localStorage.setItem('meena_photos', JSON.stringify(DEFAULT_PHOTOS));
+        localStorage.setItem('meena_reviews', JSON.stringify(DEFAULT_REVIEWS));
+      }
+
+      // Load State from Database
+      state.bangles = JSON.parse(localStorage.getItem('meena_bangles'));
+      state.services = JSON.parse(localStorage.getItem('meena_services'));
+      state.offers = JSON.parse(localStorage.getItem('meena_offers'));
+      state.photos = JSON.parse(localStorage.getItem('meena_photos'));
+      state.reviews = JSON.parse(localStorage.getItem('meena_reviews'));
+
+      // Validate persistent session authenticity
+      checkActiveSession();
+
+      // Check Saved Theme Preferences
+      const savedTheme = localStorage.getItem('meena_theme');
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+        state.darkMode = true;
+        updateThemeIcon();
+      }
+
+      // Update Calendar Year in Footer
+      document.getElementById('current-year').innerText = new Date().getFullYear();
+
+      // Render Dashboard & Site
+      renderApp();
+    };
+
+    // Dynamic Render Engine
+    function renderApp() {
+      applyLanguageTranslations();
+      renderOffers();
+      renderBanglesCategories();
+      renderBanglesGrid();
+      renderServicesCategories();
+      renderServicesGrid();
+      renderGallery();
+      renderReviews();
+      setFormStars(5);
+    }
+
+    // TRANSLATIONS TRANSLATOR ENGINE
+    function applyLanguageTranslations() {
+      const translation = DICTIONARY[state.lang];
+      document.querySelectorAll('[data-lang]').forEach(el => {
+        const key = el.getAttribute('data-lang');
+        if (translation[key]) {
+          el.innerHTML = translation[key];
+        }
+      });
+
+      // Change label text on Navbar toggle button
+      document.getElementById('lang-label').innerText = state.lang === 'en' ? 'తెలుగు' : 'English';
+    }
+
+    function toggleLanguage() {
+      state.lang = state.lang === 'en' ? 'te' : 'en';
+      if (state.lang === 'te') {
+        document.body.classList.add('lang-te');
+      } else {
+        document.body.classList.remove('lang-te');
+      }
+      renderApp();
+      showToast(state.lang === 'en' ? "Language changed to English" : "భాష తెలుగులోకి మార్చబడింది", "info");
+    }
+
+    // THEME SWITCHER
+    function toggleDarkMode() {
+      state.darkMode = !state.darkMode;
+      if (state.darkMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('meena_theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('meena_theme', 'light');
+      }
+      updateThemeIcon();
+    }
+
+    // Update theme icon classes
+    function updateThemeIcon() {
+      const icon = document.getElementById('theme-icon');
+      if (state.darkMode) {
+        icon.className = 'fa-solid fa-sun text-yellow-400 text-lg';
+      } else {
+        icon.className = 'fa-solid fa-moon text-stone-600 text-lg';
+      }
+    }
+
+    // COLLAPSIBLE MOBILE NAV
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const icon = document.getElementById('mobile-menu-icon');
+      if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        icon.className = 'fa-solid fa-xmark text-lg';
+      } else {
+        menu.classList.add('hidden');
+        icon.className = 'fa-solid fa-bars text-lg';
+      }
+    }
+
+    // ================= CUSTOM TOAST WRAPPER =================
+    function showToast(message, type = "success") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let colors = "bg-green-600 text-white";
+      let icon = "fa-circle-check";
+      if (type === "error") {
+        colors = "bg-red-600 text-white";
+        icon = "fa-triangle-exclamation";
+      } else if (type === "info") {
+        colors = "bg-rosegold-500 text-white";
+        icon = "fa-bell";
+      }
+
+      toast.className = `flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl ${colors} text-sm font-medium transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto max-w-sm border border-white/10`;
+      toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i> <span>${message}</span>`;
+      
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-[-10px]', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 4500);
+    }
+
+    // ================= CUSTOM ASYNC CONFIRMATION MODULE =================
+    function showConfirm(title, message) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        const titleEl = document.getElementById('confirm-title');
+        const msgEl = document.getElementById('confirm-msg');
+        const okBtn = document.getElementById('confirm-ok-btn');
+        const cancelBtn = document.getElementById('confirm-cancel-btn');
+
+        titleEl.innerText = title;
+        msgEl.innerText = message;
+        modal.classList.remove('hidden');
+
+        const onConfirm = () => {
+          cleanup();
+          resolve(true);
+        };
+        const onCancel = () => {
+          cleanup();
+          resolve(false);
+        };
+        const cleanup = () => {
+          modal.classList.add('hidden');
+          okBtn.removeEventListener('click', onConfirm);
+          cancelBtn.removeEventListener('click', onCancel);
+        };
+
+        okBtn.addEventListener('click', onConfirm);
+        cancelBtn.addEventListener('click', onCancel);
+      });
+    }
+
+    // ================= CLIENT SIDE RENDERING LOGIC =================
+
+    // OFFERS CARDS GENERATOR (Filters out admin-hidden deals)
+    function renderOffers() {
+      const container = document.getElementById('offers-list');
+      const unhiddenOffers = state.offers.filter(o => !o.hidden);
+      
+      if (unhiddenOffers.length === 0) {
+        container.innerHTML = `<div class="col-span-full py-10 text-center text-stone-500">No active offers available currently.</div>`;
+        return;
+      }
+      
+      container.innerHTML = unhiddenOffers.map(offer => `
+        <div class="relative bg-white dark:bg-stone-900 border border-rose-100 dark:border-stone-800 rounded-2xl p-6 shadow-md hover:shadow-xl transition-all flex flex-col justify-between overflow-hidden group animate-scaleUp">
+          <div class="absolute -right-12 -top-12 w-28 h-28 bg-rosegold-200/20 rounded-full group-hover:scale-150 transition-all duration-500"></div>
+          
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="px-2.5 py-1 rounded bg-amber-100 dark:bg-stone-800 text-amber-800 dark:text-amber-400 font-bold text-xs uppercase tracking-wider">${offer.discount}</span>
+              <span class="text-[11px] text-stone-500 font-semibold uppercase tracking-wider"><i class="fa-solid fa-hourglass-half text-rosegold-400 mr-1"></i> ${offer.validity}</span>
+            </div>
+            
+            <h4 class="font-serif text-xl font-bold text-stone-950 dark:text-white mt-2 leading-snug">
+              ${state.lang === 'en' ? offer.title_en : offer.title_te}
+            </h4>
+            <p class="text-sm text-stone-600 dark:text-stone-300 leading-relaxed font-light">
+              ${state.lang === 'en' ? offer.desc_en : offer.desc_te}
+            </p>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-rose-50 dark:border-stone-800 flex items-center justify-between gap-2">
+            <div class="bg-dashed border border-dashed border-rosegold-300 dark:border-stone-700 rounded-lg px-3 py-1.5 bg-rose-50/50 dark:bg-stone-950/40 text-xs text-center font-bold tracking-widest text-rosegold-700 dark:text-rosegold-300">
+              ${offer.code}
+            </div>
+            <button onclick="copyOfferCode('${offer.code}')" class="text-xs font-semibold text-stone-500 hover:text-rosegold-600 dark:hover:text-rosegold-400 transition-colors flex items-center gap-1.5" title="Copy Promo Code">
+              <i class="fa-regular fa-copy"></i> Copy Code
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function copyOfferCode(code) {
+      const tempInput = document.createElement("input");
+      tempInput.value = code;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempInput);
+      showToast(`Promo Code "${code}" copied successfully to clipboard!`, "info");
+    }
+
+    // BANGLES CATEGORIES CHIPS
+    let activeBangleCategory = 'All';
+    function renderBanglesCategories() {
+      const container = document.getElementById('bangles-categories');
+      const cats = ['All', ...new Set(state.bangles.map(b => b.category))];
+      
+      container.innerHTML = cats.map(cat => {
+        const active = cat === activeBangleCategory;
+        const colorClass = active 
+          ? 'bg-rosegold-500 text-white shadow-md' 
+          : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border border-rosegold-200 dark:border-stone-800 hover:bg-rose-50';
+        return `
+          <button onclick="setBangleCategory('${cat}')" class="px-5 py-2 rounded-full font-semibold text-xs tracking-wide whitespace-nowrap transition-all ${colorClass}">
+            ${cat}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function setBangleCategory(cat) {
+      activeBangleCategory = cat;
+      renderBanglesCategories();
+      renderBanglesGrid();
+    }
+
+    // BANGLES LIST GENERATOR (Filters hidden products)
+    function renderBanglesGrid() {
+      const container = document.getElementById('bangles-grid');
+      
+      let filtered = state.bangles.filter(b => !b.hidden);
+      
+      if (activeBangleCategory !== 'All') {
+        filtered = filtered.filter(b => b.category === activeBangleCategory);
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="col-span-full py-16 text-center text-stone-500">No matching bangles found.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => `
+        <div class="bg-white dark:bg-stone-900 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border border-rose-100 dark:border-stone-800 flex flex-col justify-between group">
+          <div class="relative aspect-square overflow-hidden bg-stone-100 dark:bg-stone-950">
+            <img src="${item.image}" onerror="this.src='${PLACEHOLDER_BANGLE}'" alt="${item.name_en}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+            <span class="absolute top-3 left-3 bg-stone-950/65 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest">${item.category}</span>
+            ${item.status === 'In Stock' 
+              ? `<span class="absolute top-3 right-3 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-check mr-1"></i> Available</span>`
+              : `<span class="absolute top-3 right-3 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">Out of Stock</span>`
+            }
+          </div>
+
+          <div class="p-6 space-y-4 flex-1 flex flex-col justify-between">
+            <div class="space-y-2">
+              <h4 class="font-serif text-lg font-bold text-stone-950 dark:text-white leading-snug group-hover:text-rosegold-500 transition-colors">
+                ${state.lang === 'en' ? item.name_en : item.name_te}
+              </h4>
+              <p class="text-xs text-stone-500 dark:text-stone-400 leading-relaxed line-clamp-2">
+                ${state.lang === 'en' ? item.desc_en : item.desc_te}
+              </p>
+            </div>
+
+            <div class="pt-4 border-t border-rose-50 dark:border-stone-800 flex items-center justify-between gap-2">
+              <div>
+                <span class="text-stone-400 text-[10px] uppercase font-bold tracking-widest block">Bespoke Price</span>
+                <span class="text-xl font-serif font-bold text-rosegold-600 dark:text-rosegold-400">₹${item.price}</span>
+              </div>
+
+              <button onclick="openBookingModal('${item.name_en}', 'Bangle Product Inquiry')" class="rosegold-btn text-white text-xs font-semibold px-4 py-2.5 rounded-full flex items-center gap-1.5 shrink-0 shadow-sm">
+                <i class="fa-brands fa-whatsapp text-sm"></i> Order Now
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // BEAUTY SERVICES CATEGORIES CHIPS
+    let activeServiceCategory = 'All';
+    function renderServicesCategories() {
+      const container = document.getElementById('services-categories');
+      const cats = ['All', ...new Set(state.services.map(s => s.category))];
+
+      container.innerHTML = cats.map(cat => {
+        const active = cat === activeServiceCategory;
+        const colorClass = active 
+          ? 'bg-rosegold-500 text-white shadow-md' 
+          : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border border-rosegold-200 dark:border-stone-800 hover:bg-rose-50';
+        return `
+          <button onclick="setServiceCategory('${cat}')" class="px-5 py-2.5 rounded-full font-semibold text-xs tracking-wide whitespace-nowrap transition-all ${colorClass}">
+            ${cat}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function setServiceCategory(cat) {
+      activeServiceCategory = cat;
+      renderServicesCategories();
+      renderServicesGrid();
+    }
+
+    // PARLOUR SERVICES LIST GENERATOR (Filters hidden services)
+    function renderServicesGrid() {
+      const container = document.getElementById('services-grid');
+      let filtered = state.services.filter(s => !s.hidden);
+      
+      if (activeServiceCategory !== 'All') {
+        filtered = filtered.filter(s => s.category === activeServiceCategory);
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="col-span-full py-16 text-center text-stone-500">No services found in this category.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => `
+        <div class="bg-white dark:bg-stone-900 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-rose-100 dark:border-stone-800 flex flex-col justify-between group">
+          <div class="relative h-48 overflow-hidden bg-stone-100 dark:bg-stone-950">
+            <img src="${item.image}" onerror="this.src='${PLACEHOLDER_SERVICE}'" alt="${item.name_en}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent"></div>
+            <div class="absolute bottom-4 left-4 right-4 flex justify-between items-center text-white">
+              <span class="text-xs bg-rosegold-500 text-white font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">${item.category}</span>
+              <span class="text-xs font-semibold flex items-center gap-1"><i class="fa-regular fa-clock"></i> ${item.duration}</span>
+            </div>
+          </div>
+
+          <div class="p-6 space-y-4 flex-1 flex flex-col justify-between">
+            <div class="space-y-2">
+              <h4 class="font-serif text-lg font-bold text-stone-950 dark:text-white leading-snug group-hover:text-rosegold-500 transition-colors">
+                ${state.lang === 'en' ? item.name_en : item.name_te}
+              </h4>
+              <p class="text-xs text-stone-500 dark:text-stone-400 leading-relaxed line-clamp-3">
+                ${state.lang === 'en' ? item.desc_en : item.desc_te}
+              </p>
+            </div>
+
+            <div class="pt-4 border-t border-rose-50 dark:border-stone-800 flex items-center justify-between gap-4">
+              <div>
+                <span class="text-stone-400 text-[9px] uppercase font-bold tracking-widest block">Starts at</span>
+                <span class="text-2xl font-serif font-bold text-rosegold-600 dark:text-rosegold-400">₹${item.price}</span>
+              </div>
+              <button onclick="openBookingModal('${item.name_en}', 'Beauty Parlour Service Booking')" class="rosegold-btn text-white text-xs font-semibold px-5 py-3 rounded-full flex items-center gap-1.5 shadow-md">
+                <i class="fa-regular fa-calendar-check"></i> Book Parlour
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // APPOINTMENT BOOKING PROCESS
+    function openBookingModal(name = '', type = 'Service') {
+      document.getElementById('booking-item-name').value = name;
+      document.getElementById('booking-item-type').value = type;
+      
+      const modal = document.getElementById('booking-modal');
+      modal.classList.remove('hidden');
+    }
+
+    function closeBookingModal() {
+      document.getElementById('booking-modal').classList.add('hidden');
+      document.getElementById('booking-form').reset();
+    }
+
+    function submitAppointment(event) {
+      event.preventDefault();
+      
+      const name = document.getElementById('book-name').value.trim();
+      const phone = document.getElementById('book-phone').value.trim();
+      const dateVal = document.getElementById('book-date').value;
+      const notes = document.getElementById('book-notes').value.trim();
+      const itemName = document.getElementById('booking-item-name').value;
+      const itemType = document.getElementById('booking-item-type').value;
+
+      const formattedDate = new Date(dateVal).toLocaleString();
+
+      let msg = `*MEENA APPOINTMENT BOOKING REQUEST*\n\n`;
+      msg += `👤 *Client Name:* ${name}\n`;
+      msg += `📞 *Contact Phone:* ${phone}\n`;
+      msg += `🕒 *Preferred Slot:* ${formattedDate}\n`;
+      if (itemName) {
+        msg += `🛍️ *Requested ${itemType}:* ${itemName}\n`;
+      }
+      if (notes) {
+        msg += `✍️ *Custom Notes:* ${notes}\n`;
+      }
+      msg += `\n_Submitted via Meena Bangles Online Website_`;
+
+      const encodedMsg = encodeURIComponent(msg);
+      const waUrl = `https://wa.me/919515781143?text=${encodedMsg}`;
+
+      closeBookingModal();
+      showToast(state.lang === 'en' ? "Redirecting to WhatsApp to send booking details!" : "బుకింగ్ వివరాలను పంపడానికి వాట్సాప్‌కు మళ్లించబడుతోంది!", "success");
+      
+      setTimeout(() => {
+        window.open(waUrl, '_blank');
+      }, 500);
+    }
+
+    // GALLERY RENDER LOGIC (No video elements)
+    function renderGallery() {
+      const photoContainer = document.getElementById('gallery-photos');
+      const unhiddenPhotos = state.photos.filter(p => !p.hidden);
+
+      if (unhiddenPhotos.length === 0) {
+        photoContainer.innerHTML = `<p class="col-span-full py-10 text-center text-stone-500">No photos in gallery currently.</p>`;
+      } else {
+        photoContainer.innerHTML = unhiddenPhotos.map(photo => `
+          <div class="group relative rounded-xl overflow-hidden shadow-md aspect-square bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 animate-scaleUp">
+            <img src="${photo.url}" onerror="this.src='${PLACEHOLDER_PHOTO}'" alt="${photo.caption}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end p-4">
+              <p class="text-white text-xs font-semibold">${photo.caption}</p>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // TESTIMONIALS / REVIEWS SYSTEM (Approve logic enabled)
+    function setFormStars(rating) {
+      state.starsSelected = rating;
+      document.getElementById('rev-stars').value = rating;
+      
+      const stars = document.querySelectorAll('#review-form .fa-star');
+      stars.forEach((star, index) => {
+        if (index < rating) {
+          star.className = 'fa-solid fa-star text-gold cursor-pointer';
+        } else {
+          star.className = 'fa-solid fa-star text-stone-300 dark:text-stone-700 cursor-pointer';
+        }
+      });
+    }
+
+    function addCustomerReview(event) {
+      event.preventDefault();
+      const name = document.getElementById('rev-name').value.trim();
+      const msg = document.getElementById('rev-msg').value.trim();
+      const stars = parseInt(document.getElementById('rev-stars').value);
+
+      const newReview = {
+        id: 'rev_' + Date.now(),
+        name: name,
+        stars: stars,
+        msg: msg,
+        date: new Date().toISOString().split('T')[0],
+        approved: false, // New reviews require admin verification
+        reply: '',
+        hidden: false
+      };
+
+      state.reviews.unshift(newReview);
+      localStorage.setItem('meena_reviews', JSON.stringify(state.reviews));
+
+      document.getElementById('review-form').reset();
+      setFormStars(5);
+      renderReviews();
+      showToast(state.lang === 'en' ? "Thank you! Your testimonial has been submitted for review approval." : "ధన్యవాదాలు! మీ రివ్యూ ఆమోదం కొరకు సమర్పించబడింది.", "info");
+    }
+
+    function renderReviews() {
+      const container = document.getElementById('reviews-list');
+      // Render only approved & visible reviews on customer side
+      const visibleReviews = state.reviews.filter(rev => rev.approved && !rev.hidden);
+
+      if (visibleReviews.length === 0) {
+        container.innerHTML = `<p class="py-10 text-center text-stone-500">No approved reviews yet. Be the first to share your experience!</p>`;
+        return;
+      }
+
+      container.innerHTML = visibleReviews.map(rev => {
+        let starsStr = '';
+        for (let i = 1; i <= 5; i++) {
+          starsStr += `<i class="fa-solid fa-star text-sm ${i <= rev.stars ? 'text-gold' : 'text-stone-200 dark:text-stone-800'}"></i>`;
+        }
+
+        return `
+          <div class="bg-white dark:bg-stone-900 p-6 rounded-2xl shadow-sm border border-rose-100 dark:border-stone-800 space-y-4 hover:shadow-md transition-all animate-scaleUp">
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full rosegold-btn flex items-center justify-center text-white font-bold uppercase">
+                  ${rev.name.charAt(0)}
+                </div>
+                <div>
+                  <h5 class="font-semibold text-sm text-stone-950 dark:text-white leading-none">${rev.name}</h5>
+                  <span class="text-[10px] text-stone-400 mt-1 block">${rev.date}</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-0.5">${starsStr}</div>
+            </div>
+            <p class="text-xs sm:text-sm text-stone-600 dark:text-stone-300 italic font-light leading-relaxed">
+              "${rev.msg}"
+            </p>
+            ${rev.reply ? `
+              <div class="mt-3 pl-4 border-l-2 border-rosegold-400 dark:border-rosegold-600 bg-rose-50/40 dark:bg-stone-950/30 p-3 rounded-r-xl text-xs space-y-1">
+                <span class="font-bold text-rosegold-600 dark:text-rosegold-400 block"><i class="fa-solid fa-reply-all"></i> Meena's Response:</span>
+                <p class="text-stone-600 dark:text-stone-300 italic">"${rev.reply}"</p>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // FOOTER NEWSLETTER -> WHATSAPP SUBSCRIPTION CAPTURING
+    function handleNewsletterSubmit(event) {
+      event.preventDefault();
+      const phone = document.getElementById('news-phone').value.trim();
+      document.getElementById('news-phone').value = '';
+      
+      showToast(state.lang === 'en' ? "Sending subscription request to WhatsApp!" : "వాట్సాప్ ద్వారా అభ్యర్థన పంపబడుతోంది!", "success");
+      
+      const optInMsg = state.lang === 'en' 
+        ? `Hi Meena, I want to subscribe my phone number for new design updates, customized bangle models, and beauty parlour discount alerts! My number is: ${phone}`
+        : `నమస్తే మీనా గారు, కొత్త మోడల్స్, డిజైన్లు మరియు పార్లర్ ఆఫర్లకు సంబంధించిన అప్‌డేట్స్ పొందడానికి నా వాట్సాప్ నెంబర్ సబ్‌స్క్రైబ్ చేయండి! నా నెంబర్: ${phone}`;
+      
+      const encodedMsg = encodeURIComponent(optInMsg);
+      const waUrl = `https://wa.me/919515781143?text=${encodedMsg}`;
+      
+      setTimeout(() => {
+        window.open(waUrl, '_blank');
+      }, 500);
+    }
+
+
+    // =========================================================================
+    //                    ADMIN SECURITY & SESSION SYSTEM
+    // =========================================================================
+
+    function checkActiveSession() {
+      const activeSession = sessionStorage.getItem('meena_admin_session');
+      const expiry = localStorage.getItem('meena_session_expiry');
+
+      if (activeSession && expiry && Date.now() < parseInt(expiry)) {
+        state.adminAuthenticated = true;
+        // Extend session validation
+        localStorage.setItem('meena_session_expiry', (Date.now() + 30 * 60 * 1000).toString());
+      } else {
+        state.adminAuthenticated = false;
+        sessionStorage.removeItem('meena_admin_session');
+      }
+    }
+
+    function checkAdminSession() {
+      if (!state.adminAuthenticated) {
+        showToast("Session expired or invalid admin permissions.", "error");
+        openAdminPanel();
+        return false;
+      }
+      
+      const expiry = localStorage.getItem('meena_session_expiry');
+      if (!expiry || Date.now() > parseInt(expiry)) {
+        adminLogout();
+        showToast("Your session has expired. Please log in again.", "error");
+        return false;
+      }
+      
+      // Extend session on action
+      localStorage.setItem('meena_session_expiry', (Date.now() + 30 * 60 * 1000).toString());
+      return true;
+    }
+
+    function openAdminPanel() {
+      const modal = document.getElementById('admin-modal');
+      modal.classList.remove('hidden');
+
+      if (state.adminAuthenticated) {
+        showDashboardView();
+      } else {
+        showLoginView();
+      }
+    }
+
+    // Explicitly handles closing the administration panel modal
+    function closeAdminPanel() {
+      document.getElementById('admin-modal').classList.add('hidden');
+    }
+
+    function showLoginView() {
+      document.getElementById('admin-login-view').classList.remove('hidden');
+      document.getElementById('admin-dashboard-view').classList.add('hidden');
+      document.getElementById('admin-recovery-view').classList.add('hidden');
+    }
+
+    function showDashboardView() {
+      document.getElementById('admin-login-view').classList.add('hidden');
+      document.getElementById('admin-dashboard-view').classList.remove('hidden');
+      document.getElementById('admin-recovery-view').classList.add('hidden');
+      
+      // Seed default configurations in settings panel fields
+      const creds = JSON.parse(localStorage.getItem('meena_admin_auth'));
+      document.getElementById('settings-question').value = creds.securityQuestion;
+      document.getElementById('settings-answer').value = creds.securityAnswer;
+
+      renderAdminTables();
+    }
+
+    // Secure Login Router (Standard Passcode Only)
+    async function authenticateAdmin(event) {
+      event.preventDefault();
+      const password = document.getElementById('admin-pass-input').value;
+
+      // Secure Local DB authentication fallback checking passcode only
+      const creds = JSON.parse(localStorage.getItem('meena_admin_auth'));
+      if (password === creds.password) {
+        createClientSession(creds.email);
+      } else {
+        showToast(state.lang === 'en' ? "Invalid passcode! Please try again." : "తప్పుడు పాస్‌కోడ్! దయచేసి మళ్ళీ ప్రయత్నించండి.", "error");
+      }
+    }
+
+    function createClientSession(email) {
+      state.adminAuthenticated = true;
+      sessionStorage.setItem('meena_admin_session', 'active_' + Date.now());
+      localStorage.setItem('meena_session_expiry', (Date.now() + 30 * 60 * 1000).toString()); // 30 Mins Expiry
+      
+      const emailInput = document.getElementById('admin-email-input');
+      if (emailInput) emailInput.value = '';
+      document.getElementById('admin-pass-input').value = '';
+      
+      showDashboardView();
+      showToast("Access Unlocked! Welcome Back Meena.", "success");
+    }
+
+    function adminLogout() {
+      state.adminAuthenticated = false;
+      sessionStorage.removeItem('meena_admin_session');
+      localStorage.removeItem('meena_session_expiry');
+      if (useFirebase && firebaseAuth) {
+        firebaseAuth.signOut();
+      }
+      showLoginView();
+      showToast("Safely logged out of Administrative console.", "info");
+    }
+
+    // MULTI-DEVICE SESSION REMOVAL
+    async function terminateAllSessions() {
+      const confirm = await showConfirm(
+        "Force Global Logout?",
+        "This will instantly invalidate all administrative sessions across all logged-in devices. Are you sure?"
+      );
+      if (!confirm) return;
+
+      localStorage.removeItem('meena_session_expiry');
+      adminLogout();
+      showToast("All device sessions revoked successfully.", "info");
+    }
+
+    // RECOVERY MODULE (FORGOT PASSWORD)
+    function showForgotPasswordForm() {
+      const creds = JSON.parse(localStorage.getItem('meena_admin_auth'));
+      document.getElementById('admin-login-view').classList.add('hidden');
+      document.getElementById('admin-recovery-view').classList.remove('hidden');
+      document.getElementById('recovery-question-label').innerText = `Verification Question: ${creds.securityQuestion}`;
+      
+      document.getElementById('recovery-question-block').classList.remove('hidden');
+      document.getElementById('recovery-reset-block').classList.add('hidden');
+    }
+
+    function cancelRecovery() {
+      showLoginView();
+    }
+
+    function verifyRecoveryAnswer() {
+      const emailInput = document.getElementById('recovery-email-input').value.trim();
+      const answerInput = document.getElementById('recovery-answer-input').value.trim();
+      const creds = JSON.parse(localStorage.getItem('meena_admin_auth'));
+
+      if (emailInput.toLowerCase() === creds.email.toLowerCase() && answerInput.toLowerCase() === creds.securityAnswer.toLowerCase()) {
+        document.getElementById('recovery-question-block').classList.add('hidden');
+        document.getElementById('recovery-reset-block').classList.remove('hidden');
+        showToast("Identity verified successfully! Choose a new password.", "success");
+      } else {
+        showToast("Invalid security answers. Reset rejected.", "error");
+      }
+    }
+
+    async function submitNewPassword() {
+      const newPass = document.getElementById('recovery-new-pass').value;
+      if (!newPass) {
+        showToast("Please enter a valid password.", "error");
+        return;
+      }
+
+      const creds = JSON.parse(localStorage.getItem('meena_admin_auth'));
+      creds.password = newPass;
+      localStorage.setItem('meena_admin_auth', JSON.stringify(creds));
+
+      showToast("Password updated successfully! Please log in.", "success");
+      showLoginView();
+    }
+
+    // SETTINGS SAVING METHOD (Simplified passcode settings)
+    async function updateAdminCredentials(event) {
+      event.preventDefault();
+      if (!checkAdminSession()) return;
+
+      const password = document.getElementById('settings-new-pass').value;
+      const creds = JSON.parse(localStorage.getItem('meena_admin_auth'));
+
+      if (password) {
+        creds.password = password;
+      }
+
+      localStorage.setItem('meena_admin_auth', JSON.stringify(creds));
+
+      document.getElementById('settings-new-pass').value = '';
+      showToast("Admin passcode saved successfully!", "success");
+    }
+
+    // Updates recovery credentials in local db storage
+    function updateAdminSecurity(event) {
+      event.preventDefault();
+      if (!checkAdminSession()) return;
+
+      const question = document.getElementById('settings-question').value;
+      const answer = document.getElementById('settings-answer').value.trim();
+      const creds = JSON.parse(localStorage.getItem('meena_admin_auth'));
+
+      creds.securityQuestion = question;
+      creds.securityAnswer = answer;
+
+      localStorage.setItem('meena_admin_auth', JSON.stringify(creds));
+      showToast("Security recovery credentials updated successfully!", "success");
+    }
+
+
+    // Sidebar navigation toggling
+    function switchAdminTab(section) {
+      state.currentAdminTab = section;
+      
+      const btns = document.querySelectorAll('.admin-tab-btn');
+      btns.forEach(btn => {
+        if (btn.id === `admin-btn-${section}`) {
+          btn.className = "admin-tab-btn active w-full py-2.5 px-4 rounded-lg text-left text-xs font-semibold flex items-center gap-3 bg-rosegold-100 text-rosegold-800 dark:bg-stone-800 dark:text-white shrink-0";
+        } else {
+          btn.className = "admin-tab-btn w-full py-2.5 px-4 rounded-lg text-left text-xs font-semibold flex items-center gap-3 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800 shrink-0";
+        }
+      });
+
+      document.querySelectorAll('.admin-panel-section').forEach(sect => {
+        if (sect.id === `admin-tab-content-${section}`) {
+          sect.classList.remove('hidden');
+        } else {
+          sect.classList.add('hidden');
+        }
+      });
+    }
+
+    // Refresh administrative listings dynamic tables & dashboards metrics
+    function renderAdminTables() {
+      // Calculate dynamic dashboard figures
+      const totalImages = state.photos.length;
+      const totalReviews = state.reviews.length;
+      const totalPosts = state.bangles.length + state.services.length + state.offers.length;
+      
+      const hiddenBangles = state.bangles.filter(b => b.hidden).length;
+      const hiddenServices = state.services.filter(s => s.hidden).length;
+      const hiddenOffers = state.offers.filter(o => o.hidden).length;
+      const hiddenPhotos = state.photos.filter(p => p.hidden).length;
+      const hiddenCount = hiddenBangles + hiddenServices + hiddenOffers + hiddenPhotos;
+
+      document.getElementById('stat-total-images').innerText = totalImages;
+      document.getElementById('stat-total-reviews').innerText = totalReviews;
+      document.getElementById('stat-total-posts').innerText = totalPosts;
+      document.getElementById('stat-hidden-posts').innerText = hiddenCount;
+
+      const pendingReviews = state.reviews.filter(r => !r.approved).length;
+      document.getElementById('pending-reviews-badge').innerText = `${pendingReviews} Pending Approval`;
+
+      // BANGLES TABLE
+      const bTable = document.getElementById('admin-bangles-table');
+      bTable.innerHTML = state.bangles.map(item => `
+        <tr class="border-b border-stone-200 dark:border-stone-800/60 hover:bg-stone-50 dark:hover:bg-stone-800/40">
+          <td class="p-3">
+            <img src="${item.image}" onerror="this.src='${PLACEHOLDER_BANGLE}'" class="w-10 h-10 object-cover rounded-lg">
+          </td>
+          <td class="p-3 font-semibold text-stone-900 dark:text-white">${item.name_en}</td>
+          <td class="p-3"><span class="px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-[10px] font-bold">${item.category}</span></td>
+          <td class="p-3 text-rosegold-600 font-bold">₹${item.price}</td>
+          <td class="p-3 text-stone-500">${item.status}</td>
+          <td class="p-3">
+            <button onclick="toggleVisibility('bangle', '${item.id}')" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${item.hidden ? 'bg-stone-100 dark:bg-stone-800 text-stone-500' : 'bg-emerald-100 dark:bg-stone-950 text-emerald-800'}">
+              <i class="fa-solid ${item.hidden ? 'fa-eye-slash' : 'fa-eye'}"></i> ${item.hidden ? 'Hidden / దాచబడింది' : 'Visible / కనిపిస్తుంది'}
+            </button>
+          </td>
+          <td class="p-3 text-right space-x-1.5 whitespace-nowrap">
+            <button onclick="editItemTrigger('bangle', '${item.id}')" class="p-1.5 text-amber-500 hover:text-amber-600" title="Edit Bangle"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deleteItemTrigger('bangle', '${item.id}')" class="p-1.5 text-rose-500 hover:text-rose-600" title="Delete Bangle"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('');
+
+      // SERVICES TABLE
+      const sTable = document.getElementById('admin-services-table');
+      sTable.innerHTML = state.services.map(item => `
+        <tr class="border-b border-stone-200 dark:border-stone-800/60 hover:bg-stone-50 dark:hover:bg-stone-800/40">
+          <td class="p-3 font-semibold text-stone-900 dark:text-white">${item.name_en}</td>
+          <td class="p-3"><span class="px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-[10px] font-bold">${item.category}</span></td>
+          <td class="p-3 text-rosegold-600 font-bold">₹${item.price}</td>
+          <td class="p-3 text-stone-500">${item.duration}</td>
+          <td class="p-3">
+            <button onclick="toggleVisibility('service', '${item.id}')" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${item.hidden ? 'bg-stone-100 dark:bg-stone-800 text-stone-500' : 'bg-emerald-100 dark:bg-stone-950 text-emerald-800'}">
+              <i class="fa-solid ${item.hidden ? 'fa-eye-slash' : 'fa-eye'}"></i> ${item.hidden ? 'Hidden / దాచబడింది' : 'Visible / కనిపిస్తుంది'}
+            </button>
+          </td>
+          <td class="p-3 text-right space-x-1.5">
+            <button onclick="editItemTrigger('service', '${item.id}')" class="p-1.5 text-amber-500 hover:text-amber-600"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deleteItemTrigger('service', '${item.id}')" class="p-1.5 text-rose-500 hover:text-rose-600"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('');
+
+      // OFFERS TABLE
+      const oTable = document.getElementById('admin-offers-table');
+      oTable.innerHTML = state.offers.map(item => `
+        <tr class="border-b border-stone-200 dark:border-stone-800/60 hover:bg-stone-50 dark:hover:bg-stone-800/40">
+          <td class="p-3">
+            <p class="font-semibold text-stone-900 dark:text-white">${item.title_en}</p>
+            <p class="text-[10px] text-stone-400 font-light mt-0.5">${item.title_te}</p>
+          </td>
+          <td class="p-3">
+            <p class="font-bold text-stone-800 dark:text-stone-200">${item.code}</p>
+            <p class="text-[10px] text-amber-600 mt-0.5">${item.discount}</p>
+          </td>
+          <td class="p-3 text-stone-500">${item.validity}</td>
+          <td class="p-3">
+            <button onclick="toggleVisibility('offer', '${item.id}')" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${item.hidden ? 'bg-stone-100 dark:bg-stone-800 text-stone-500' : 'bg-emerald-100 dark:bg-stone-950 text-emerald-800'}">
+              <i class="fa-solid ${item.hidden ? 'fa-eye-slash' : 'fa-eye'}"></i> ${item.hidden ? 'Hidden / దాచబడింది' : 'Visible / కనిపిస్తుంది'}
+            </button>
+          </td>
+          <td class="p-3 text-right space-x-1.5">
+            <button onclick="editItemTrigger('offer', '${item.id}')" class="p-1.5 text-amber-500 hover:text-amber-600"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deleteItemTrigger('offer', '${item.id}')" class="p-1.5 text-rose-500 hover:text-rose-600"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('');
+
+      // PHOTOS TABLE
+      const pTable = document.getElementById('admin-photos-table');
+      pTable.innerHTML = state.photos.map(item => `
+        <tr class="border-b border-stone-100 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800/40">
+          <td class="p-2">
+            <img src="${item.url}" onerror="this.src='${PLACEHOLDER_PHOTO}'" class="w-10 h-10 object-cover rounded">
+          </td>
+          <td class="p-2 text-stone-800 dark:text-stone-200 max-w-[200px] truncate">${item.caption}</td>
+          <td class="p-2">
+            <button onclick="toggleVisibility('photo', '${item.id}')" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${item.hidden ? 'bg-stone-100 dark:bg-stone-800 text-stone-500' : 'bg-emerald-100 dark:bg-stone-950 text-emerald-800'}">
+              <i class="fa-solid ${item.hidden ? 'fa-eye-slash' : 'fa-eye'}"></i> ${item.hidden ? 'Hidden / దాచబడింది' : 'Visible / కనిపిస్తుంది'}
+            </button>
+          </td>
+          <td class="p-2 text-right">
+            <button onclick="deleteItemTrigger('photo', '${item.id}')" class="p-1.5 text-rose-500 hover:text-rose-600"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('');
+
+      // MODERATED REVIEWS TABLE
+      const revTable = document.getElementById('admin-reviews-table');
+      revTable.innerHTML = state.reviews.map(item => `
+        <tr class="border-b border-stone-200 dark:border-stone-800/60 hover:bg-stone-50 dark:hover:bg-stone-800/40">
+          <td class="p-3">
+            <p class="font-bold text-stone-900 dark:text-white">${item.name}</p>
+            <p class="text-[10px] text-stone-400 mt-0.5">${item.date}</p>
+          </td>
+          <td class="p-3 max-w-[250px]">
+            <p class="font-bold text-amber-500 text-xs">${"★".repeat(item.stars)}</p>
+            <p class="text-stone-600 dark:text-stone-300 italic mt-1 text-xs truncate" title="${item.msg}">${item.msg}</p>
+          </td>
+          <td class="p-3 space-y-1.5">
+            <button onclick="toggleApproveReview('${item.id}')" class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${item.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+              <i class="fa-solid ${item.approved ? 'fa-circle-check' : 'fa-hourglass-start'}"></i> ${item.approved ? 'Approved / ఆమోదించబడింది' : 'Pending / పెండింగ్'}
+            </button>
+            <button onclick="toggleVisibility('review', '${item.id}')" class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${item.hidden ? 'bg-stone-100 text-stone-500' : 'bg-emerald-100 text-emerald-800'}">
+              <i class="fa-solid ${item.hidden ? 'fa-eye-slash' : 'fa-eye'}"></i> ${item.hidden ? 'Hidden / దాచబడింది' : 'Visible / కనిపిస్తుంది'}
+            </button>
+          </td>
+          <td class="p-3 max-w-[200px] truncate text-stone-500 italic">
+            ${item.reply ? item.reply : '<span class="text-[10px] text-stone-400">No Response / సమాధానం లేదు</span>'}
+          </td>
+          <td class="p-3 text-right space-x-1">
+            <button onclick="openFormModal('review-reply', 'edit', '${item.id}')" class="p-1.5 text-rosegold-500 hover:text-rosegold-600" title="Reply to Review"><i class="fa-solid fa-reply"></i></button>
+            <button onclick="deleteItemTrigger('review', '${item.id}')" class="p-1.5 text-rose-500 hover:text-rose-600" title="Delete Review"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // VISIBILITY POST MANAGER TOGGLE
+    function toggleVisibility(target, itemId) {
+      if (!checkAdminSession()) return;
+
+      if (target === 'bangle') {
+        const item = state.bangles.find(b => b.id === itemId);
+        if (item) item.hidden = !item.hidden;
+        localStorage.setItem('meena_bangles', JSON.stringify(state.bangles));
+      } else if (target === 'service') {
+        const item = state.services.find(s => s.id === itemId);
+        if (item) item.hidden = !item.hidden;
+        localStorage.setItem('meena_services', JSON.stringify(state.services));
+      } else if (target === 'offer') {
+        const item = state.offers.find(o => o.id === itemId);
+        if (item) item.hidden = !item.hidden;
+        localStorage.setItem('meena_offers', JSON.stringify(state.offers));
+      } else if (target === 'photo') {
+        const item = state.photos.find(p => p.id === itemId);
+        if (item) item.hidden = !item.hidden;
+        localStorage.setItem('meena_photos', JSON.stringify(state.photos));
+      } else if (target === 'review') {
+        const item = state.reviews.find(r => r.id === itemId);
+        if (item) item.hidden = !item.hidden;
+        localStorage.setItem('meena_reviews', JSON.stringify(state.reviews));
+      }
+
+      renderApp();
+      renderAdminTables();
+      showToast("Visibility options altered immediately!", "success");
+    }
+
+    // APPROVE AND ACTIVATE USER TESTIMONIALS
+    function toggleApproveReview(reviewId) {
+      if (!checkAdminSession()) return;
+
+      const rev = state.reviews.find(r => r.id === reviewId);
+      if (rev) {
+        rev.approved = !rev.approved;
+        localStorage.setItem('meena_reviews', JSON.stringify(state.reviews));
+        renderApp();
+        renderAdminTables();
+        showToast(rev.approved ? "Review approved! It is now visible to customers." : "Review unapproved.", "success");
+      }
+    }
+
+
+    // CREATE OR EDIT FORM INJECTOR
+    function openFormModal(target, mode = 'add', itemId = null) {
+      if (!checkAdminSession()) return;
+
+      document.getElementById('crud-target').value = target;
+      document.getElementById('crud-mode').value = mode;
+      document.getElementById('crud-item-id').value = itemId || '';
+
+      const modalTitle = document.getElementById('crud-modal-title');
+      const fieldsContainer = document.getElementById('crud-fields');
+      fieldsContainer.innerHTML = ''; // reset
+
+      const modeStr = mode === 'add' ? 'Add New / కొత్తది చేర్చు' : 'Modify / సవరించు';
+      const entityStr = target.charAt(0).toUpperCase() + target.slice(1);
+      modalTitle.innerText = `${modeStr} ${entityStr} Settings`;
+
+      let currentItem = null;
+      if (mode === 'edit' && itemId) {
+        if (target === 'bangle') currentItem = state.bangles.find(b => b.id === itemId);
+        if (target === 'service') currentItem = state.services.find(s => s.id === itemId);
+        if (target === 'offer') currentItem = state.offers.find(o => o.id === itemId);
+        if (target === 'review-reply') currentItem = state.reviews.find(r => r.id === itemId);
+      }
+
+      // Render Dynamic Fields based on schema
+      if (target === 'bangle') {
+        const stdBangleCats = ["Bridal Set", "Stone Work", "Metal Bangles", "Silk Thread", "Daily Wear"];
+        const isBangleOther = currentItem && !stdBangleCats.includes(currentItem.category);
+        
+        fieldsContainer.innerHTML = `
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Bangle Name (English) / గాజు పేరు (ఇంగ్లీష్)</label>
+            <input type="text" id="inp-bangle-name-en" value="${currentItem?.name_en || ''}" required class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Bangle Name (Telugu) / గాజు పేరు (తెలుగు)</label>
+            <input type="text" id="inp-bangle-name-te" value="${currentItem?.name_te || ''}" required class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Category Select / విభాగం ఎంచుకోండి</label>
+            <select id="inp-bangle-cat" onchange="toggleCategoryOther('bangle')" class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+              <option value="Bridal Set" ${currentItem?.category === 'Bridal Set' ? 'selected' : ''}>Bridal Set</option>
+              <option value="Stone Work" ${currentItem?.category === 'Stone Work' ? 'selected' : ''}>Stone Work</option>
+              <option value="Metal Bangles" ${currentItem?.category === 'Metal Bangles' ? 'selected' : ''}>Metal Bangles</option>
+              <option value="Silk Thread" ${currentItem?.category === 'Silk Thread' ? 'selected' : ''}>Silk Thread</option>
+              <option value="Daily Wear" ${currentItem?.category === 'Daily Wear' ? 'selected' : ''}>Daily Wear</option>
+              <option value="Others" ${isBangleOther ? 'selected' : ''}>Others / ఇతరములు</option>
+            </select>
+          </div>
+          <div id="bangle-cat-other-container" class="${isBangleOther ? '' : 'hidden'}">
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Enter Custom Category / కొత్త వర్గం రాయండి</label>
+            <input type="text" id="inp-bangle-cat-other" value="${isBangleOther ? currentItem.category : ''}" class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Price (INR) / ధర</label>
+              <input type="number" id="inp-bangle-price" value="${currentItem?.price || ''}" required class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Availability / లభ్యత</label>
+              <select id="inp-bangle-status" class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+                <option value="In Stock" ${currentItem?.status === 'In Stock' ? 'selected' : ''}>In Stock / అందుబాటులో ఉంది</option>
+                <option value="Out of Stock" ${currentItem?.status === 'Out of Stock' ? 'selected' : ''}>Out of Stock / అయిపోయింది</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Description (English) / వివరణ (ఇంగ్లీష్) <span class="text-stone-400 font-normal">(Optional / ఐచ్ఛికం)</span></label>
+            <textarea id="inp-bangle-desc-en" rows="2" class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">${currentItem?.desc_en || ''}</textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Description (Telugu) / వివరణ (తెలుగు) <span class="text-stone-400 font-normal">(Optional / ఐచ్ఛికం)</span></label>
+            <textarea id="inp-bangle-desc-te" rows="2" class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">${currentItem?.desc_te || ''}</textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Bangle Image (File Upload) / ఫోటో అప్‌లోడ్</label>
+            <input type="file" id="inp-bangle-file" onchange="convertBase64(this, 'bangle-base64')" class="w-full px-4 py-1.5 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-xs text-stone-500">
+            <input type="hidden" id="bangle-base64" value="${currentItem?.image || ''}">
+            ${currentItem?.image ? `<p class="text-[10px] text-green-500 mt-1">Existing high-resolution image loaded</p>` : ''}
+          </div>
+        `;
+      } 
+      else if (target === 'service') {
+        const stdServiceCats = ["Bridal Makeover", "Hair Styling", "Mehendi Art", "Facials & Skincare", "Nail Art"];
+        const isServiceOther = currentItem && !stdServiceCats.includes(currentItem.category);
+        
+        fieldsContainer.innerHTML = `
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Service Title (English) / సర్వీస్ పేరు (ఇంగ్లీష్)</label>
+            <input type="text" id="inp-service-name-en" value="${currentItem?.name_en || ''}" required class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Service Title (Telugu) / సర్వీస్ పేరు (తెలుగు)</label>
+            <input type="text" id="inp-service-name-te" value="${currentItem?.name_te || ''}" required class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Category Select / విభాగం ఎంచుకోండి</label>
+            <select id="inp-service-cat" onchange="toggleCategoryOther('service')" class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+              <option value="Bridal Makeover" ${currentItem?.category === 'Bridal Makeover' ? 'selected' : ''}>Bridal Makeover</option>
+              <option value="Hair Styling" ${currentItem?.category === 'Hair Styling' ? 'selected' : ''}>Hair Styling</option>
+              <option value="Mehendi Art" ${currentItem?.category === 'Mehendi Art' ? 'selected' : ''}>Mehendi Art</option>
+              <option value="Facials & Skincare" ${currentItem?.category === 'Facials & Skincare' ? 'selected' : ''}>Facials & Skincare</option>
+              <option value="Nail Art" ${currentItem?.category === 'Nail Art' ? 'selected' : ''}>Nail Art</option>
+              <option value="Others" ${isServiceOther ? 'selected' : ''}>Others / ఇతరములు</option>
+            </select>
+          </div>
+          <div id="service-cat-other-container" class="${isServiceOther ? '' : 'hidden'}">
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Enter Custom Category / కొత్త వర్గం రాయండి</label>
+            <input type="text" id="inp-service-cat-other" value="${isServiceOther ? currentItem.category : ''}" class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Price (Starts at INR) / ప్రారంభ ధర</label>
+              <input type="number" id="inp-service-price" value="${currentItem?.price || ''}" required class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Treatment Duration / సమయం</label>
+              <input type="text" id="inp-service-duration" placeholder="e.g. 60 Mins, 3 Hours" value="${currentItem?.duration || ''}" required class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Detailed Description (English) / పూర్తి వివరణ (ఇంగ్లీష్) <span class="text-stone-400 font-normal">(Optional / ఐచ్ఛికం)</span></label>
+            <textarea id="inp-service-desc-en" rows="2" class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">${currentItem?.desc_en || ''}</textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Detailed Description (Telugu) / పూర్తి వివరణ (తెలుగు) <span class="text-stone-400 font-normal">(Optional / ఐచ్ఛికం)</span></label>
+            <textarea id="inp-service-desc-te" rows="2" class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">${currentItem?.desc_te || ''}</textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Service Display Banner (File Upload) / ఫోటో అప్‌లోడ్</label>
+            <input type="file" id="inp-service-file" onchange="convertBase64(this, 'service-base64')" class="w-full px-4 py-1.5 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-xs text-stone-500">
+            <input type="hidden" id="service-base64" value="${currentItem?.image || ''}">
+            ${currentItem?.image ? `<p class="text-[10px] text-green-500 mt-1">Existing banner loaded</p>` : ''}
+          </div>
+        `;
+      } 
+      else if (target === 'offer') {
+        fieldsContainer.innerHTML = `
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Offer Title (English) / ఆఫర్ పేరు (ఇంగ్లీష్)</label>
+            <input type="text" id="inp-offer-title-en" value="${currentItem?.title_en || ''}" required class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Offer Title (Telugu) / ఆఫర్ పేరు (తెలుగు)</label>
+            <input type="text" id="inp-offer-title-te" value="${currentItem?.title_te || ''}" required class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Offer Description (English) / వివరణ (ఇంగ్లీష్)</label>
+            <textarea id="inp-offer-desc-en" rows="2" required class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">${currentItem?.desc_en || ''}</textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Offer Description (Telugu) / వివరణ (తెలుగు)</label>
+            <textarea id="inp-offer-desc-te" rows="2" required class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">${currentItem?.desc_te || ''}</textarea>
+          </div>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Promo Code / కోడ్</label>
+              <input type="text" id="inp-offer-code" placeholder="e.g. MEENA20" value="${currentItem?.code || ''}" required class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Discount Tag / తగ్గింపు</label>
+              <input type="text" id="inp-offer-discount" placeholder="e.g. 20% Off" value="${currentItem?.discount || ''}" required class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Validity / చివరి తేదీ</label>
+              <input type="text" id="inp-offer-validity" placeholder="e.g. Till 31 Dec" value="${currentItem?.validity || ''}" required class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+            </div>
+          </div>
+        `;
+      } 
+      else if (target === 'photo') {
+        fieldsContainer.innerHTML = `
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Brief Photo Caption / టైటిల్</label>
+            <input type="text" id="inp-photo-caption" required class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Select Photo File / ఫోటో ఎంచుకోండి</label>
+            <input type="file" id="inp-photo-file" onchange="convertBase64(this, 'photo-base64')" required class="w-full px-4 py-1.5 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-xs text-stone-500">
+            <input type="hidden" id="photo-base64" value="">
+          </div>
+        `;
+      }
+      else if (target === 'review-reply') {
+        fieldsContainer.innerHTML = `
+          <div class="space-y-4">
+            <div class="p-4 bg-stone-50 dark:bg-stone-950 rounded-xl border">
+              <span class="text-[10px] font-bold text-stone-400 block uppercase">Review by ${currentItem?.name}</span>
+              <p class="text-xs text-stone-600 dark:text-stone-300 italic mt-1">"${currentItem?.msg}"</p>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Reply Message / సమాధానం</label>
+              <textarea id="inp-review-reply-msg" rows="3" required placeholder="Type reply here..." class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">${currentItem?.reply || ''}</textarea>
+            </div>
+          </div>
+        `;
+      }
+
+      document.getElementById('crud-modal').classList.remove('hidden');
+    }
+
+    function toggleCategoryOther(target) {
+      const select = document.getElementById(`inp-${target}-cat`);
+      const container = document.getElementById(`${target}-cat-other-container`);
+      const otherInput = document.getElementById(`inp-${target}-cat-other`);
+      if (select && select.value === 'Others') {
+        container.classList.remove('hidden');
+        if (otherInput) otherInput.required = true;
+      } else {
+        container.classList.add('hidden');
+        if (otherInput) {
+          otherInput.required = false;
+          otherInput.value = '';
+        }
+      }
+    }
+
+    function closeCrudModal() {
+      document.getElementById('crud-modal').classList.add('hidden');
+      document.getElementById('crud-form').reset();
+    }
+
+    // BASE64 FILE PARSING FOR INSTANT LOCALSTORAGE PREVIEWS
+    function convertBase64(inputElement, targetHiddenId) {
+      const file = inputElement.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+        showToast("Warning: File size exceeds 2MB! Please upload compressed images.", "error");
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById(targetHiddenId).value = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // FORM SUBMISSION ROUTINE FOR CREATES / UPDATES
+    function handleCrudSubmit(event) {
+      event.preventDefault();
+      if (!checkAdminSession()) return;
+
+      const target = document.getElementById('crud-target').value;
+      const mode = document.getElementById('crud-mode').value;
+      const itemId = document.getElementById('crud-item-id').value;
+
+      if (target === 'bangle') {
+        const nameEn = document.getElementById('inp-bangle-name-en').value.trim();
+        const nameTe = document.getElementById('inp-bangle-name-te').value.trim();
+        let cat = document.getElementById('inp-bangle-cat').value;
+        if (cat === 'Others') {
+          cat = document.getElementById('inp-bangle-cat-other').value.trim();
+        }
+        const price = parseInt(document.getElementById('inp-bangle-price').value);
+        const status = document.getElementById('inp-bangle-status').value;
+        const descEn = document.getElementById('inp-bangle-desc-en').value.trim();
+        const descTe = document.getElementById('inp-bangle-desc-te').value.trim();
+        const b64 = document.getElementById('bangle-base64').value || PLACEHOLDER_BANGLE;
+
+        if (mode === 'add') {
+          const newBangle = {
+            id: 'b_' + Date.now(),
+            name_en: nameEn, name_te: nameTe,
+            category: cat, price: price, status: status,
+            desc_en: descEn, desc_te: descTe,
+            image: b64, hidden: false
+          };
+          state.bangles.push(newBangle);
+        } else {
+          const index = state.bangles.findIndex(b => b.id === itemId);
+          if (index !== -1) {
+            state.bangles[index] = {
+              ...state.bangles[index],
+              name_en: nameEn, name_te: nameTe,
+              category: cat, price: price, status: status,
+              desc_en: descEn, desc_te: descTe,
+              image: b64
+            };
+          }
+        }
+        localStorage.setItem('meena_bangles', JSON.stringify(state.bangles));
+      } 
+      else if (target === 'service') {
+        const nameEn = document.getElementById('inp-service-name-en').value.trim();
+        const nameTe = document.getElementById('inp-service-name-te').value.trim();
+        let cat = document.getElementById('inp-service-cat').value;
+        if (cat === 'Others') {
+          cat = document.getElementById('inp-service-cat-other').value.trim();
+        }
+        const price = parseInt(document.getElementById('inp-service-price').value);
+        const duration = document.getElementById('inp-service-duration').value.trim();
+        const descEn = document.getElementById('inp-service-desc-en').value.trim();
+        const descTe = document.getElementById('inp-service-desc-te').value.trim();
+        const b64 = document.getElementById('service-base64').value || PLACEHOLDER_SERVICE;
+
+        if (mode === 'add') {
+          const newSvc = {
+            id: 's_' + Date.now(),
+            name_en: nameEn, name_te: nameTe,
+            category: cat, price: price, duration: duration,
+            desc_en: descEn, desc_te: descTe,
+            image: b64, hidden: false
+          };
+          state.services.push(newSvc);
+        } else {
+          const index = state.services.findIndex(s => s.id === itemId);
+          if (index !== -1) {
+            state.services[index] = {
+              ...state.services[index],
+              name_en: nameEn, name_te: nameTe,
+              category: cat, price: price, duration: duration,
+              desc_en: descEn, desc_te: descTe,
+              image: b64
+            };
+          }
+        }
+        localStorage.setItem('meena_services', JSON.stringify(state.services));
+      } 
+      else if (target === 'offer') {
+        const titleEn = document.getElementById('inp-offer-title-en').value.trim();
+        const titleTe = document.getElementById('inp-offer-title-te').value.trim();
+        const descEn = document.getElementById('inp-offer-desc-en').value.trim();
+        const descTe = document.getElementById('inp-offer-desc-te').value.trim();
+        const code = document.getElementById('inp-offer-code').value.trim().toUpperCase();
+        const discount = document.getElementById('inp-offer-discount').value.trim();
+        const validity = document.getElementById('inp-offer-validity').value.trim();
+
+        if (mode === 'add') {
+          const newOffer = {
+            id: 'o_' + Date.now(),
+            title_en: titleEn, title_te: titleTe,
+            desc_en: descEn, desc_te: descTe,
+            code: code, discount: discount, validity: validity, hidden: false
+          };
+          state.offers.push(newOffer);
+        } else {
+          const index = state.offers.findIndex(o => o.id === itemId);
+          if (index !== -1) {
+            state.offers[index] = {
+              ...state.offers[index],
+              title_en: titleEn, title_te: titleTe,
+              desc_en: descEn, desc_te: descTe,
+              code: code, discount: discount, validity: validity
+            };
+          }
+        }
+        localStorage.setItem('meena_offers', JSON.stringify(state.offers));
+      } 
+      else if (target === 'photo') {
+        const cap = document.getElementById('inp-photo-caption').value.trim();
+        const b64 = document.getElementById('photo-base64').value;
+        if (!b64) {
+          showToast("Error: Please select a valid photo file.", "error");
+          return;
+        }
+
+        const newPhoto = {
+          id: 'gp_' + Date.now(),
+          caption: cap,
+          url: b64, hidden: false
+        };
+        state.photos.push(newPhoto);
+        localStorage.setItem('meena_photos', JSON.stringify(state.photos));
+      }
+      else if (target === 'review-reply') {
+        const index = state.reviews.findIndex(r => r.id === itemId);
+        if (index !== -1) {
+          state.reviews[index].reply = document.getElementById('inp-review-reply-msg').value.trim();
+          localStorage.setItem('meena_reviews', JSON.stringify(state.reviews));
+        }
+      }
+
+      closeCrudModal();
+      renderApp();
+      renderAdminTables();
+      showToast("Settings and data modifications published successfully!", "success");
+    }
+
+    // TRIGGER EDIT ROUTINE
+    function editItemTrigger(target, itemId) {
+      openFormModal(target, 'edit', itemId);
+    }
+
+    // TRIGGER REMOVE/DELETE ROUTINE with custom async confirm overlay
+    async function deleteItemTrigger(target, itemId) {
+      const verify = await showConfirm(
+        "Permanent Deletion",
+        `Are you absolutely sure you want to permanently delete this ${target} item? This action is irreversible.`
+      );
+      if (!verify) return;
+
+      if (target === 'bangle') {
+        state.bangles = state.bangles.filter(b => b.id !== itemId);
+        localStorage.setItem('meena_bangles', JSON.stringify(state.bangles));
+      } else if (target === 'service') {
+        state.services = state.services.filter(s => s.id !== itemId);
+        localStorage.setItem('meena_services', JSON.stringify(state.services));
+      } else if (target === 'offer') {
+        state.offers = state.offers.filter(o => o.id !== itemId);
+        localStorage.setItem('meena_offers', JSON.stringify(state.offers));
+      } else if (target === 'photo') {
+        state.photos = state.photos.filter(p => p.id !== itemId);
+        localStorage.setItem('meena_photos', JSON.stringify(state.photos));
+      } else if (target === 'review') {
+        state.reviews = state.reviews.filter(r => r.id !== itemId);
+        localStorage.setItem('meena_reviews', JSON.stringify(state.reviews));
+      }
+
+      renderApp();
+      renderAdminTables();
+      showToast("Data permanently removed from records.", "info");
+    }
+  </script>
+</body>
+</html>
