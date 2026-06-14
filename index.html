@@ -41,7 +41,7 @@
   
   <!-- Firebase SDKs for Auth -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <style>
     /* Premium luxury custom glassmorphism & gradients */
@@ -155,6 +155,12 @@
         <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-full flex items-center justify-center text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all" aria-label="Toggle Theme">
           <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
         </button>
+
+        <!-- Live Cloud Sync Status Indicator -->
+        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-stone-100/70 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700" title="Cloud Sync Status">
+          <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="cloud-status-label" class="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">Syncing...</span>
+        </div>
 
         <!-- Admin Portal Trigger Button -->
         <button onclick="openAdminPanel()" class="w-10 h-10 rounded-full flex items-center justify-center text-rosegold-500 dark:text-rosegold-300 hover:bg-rosegold-100/50 dark:hover:bg-rosegold-950/30 transition-all border border-rosegold-200 dark:border-rosegold-800" title="Admin Control Dashboard">
@@ -1071,58 +1077,114 @@
       services: [],
       offers: [],
       photos: [],
-      reviews: []
+      reviews: [],
+      dataLoaded: { bangles: false, services: false, offers: false, photos: false, reviews: false }
     };
 
-    // Real Firebase & fallback secure LocalStorage Auth Configs
-    let firebaseAuth = null;
-    let useFirebase = false;
+    // =========================================================================
+    //                 FIREBASE / CLOUD FIRESTORE - LIVE DATABASE
+    // =========================================================================
+    // All website content (bangles, services, offers, gallery photos, reviews
+    // & admin passcode) is stored centrally in Firestore so that EVERY visitor
+    // and EVERY device/browser sees the exact same live data.
+    const firebaseConfig = {
+      apiKey: "AIzaSyB7Hq9XC6r0iyphIj9-xy5zB49nY9z1JJo",
+      authDomain: "meena-bangles.firebaseapp.com",
+      projectId: "meena-bangles",
+      storageBucket: "meena-bangles.firebasestorage.app",
+      messagingSenderId: "304084442752",
+      appId: "1:304084442752:web:2142c231ae97ee349ad065",
+      measurementId: "G-RZM0GD64Y1"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Firestore collection names for each content type
+    const FS_COLLECTIONS = {
+      bangles: 'meena_bangles',
+      services: 'meena_services',
+      offers: 'meena_offers',
+      photos: 'meena_photos',
+      reviews: 'meena_reviews'
+    };
+    const FS_SETTINGS_DOC = db.collection('meena_settings').doc('admin');
+
+    // Shows / hides a small "syncing with server" indicator in the header
+    function setCloudStatus(status) {
+      const dot = document.getElementById('cloud-status-dot');
+      const label = document.getElementById('cloud-status-label');
+      if (!dot || !label) return;
+      if (status === 'connected') {
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+        label.innerText = state.lang === 'en' ? 'Live' : 'లైవ్';
+      } else if (status === 'error') {
+        dot.className = 'w-2 h-2 rounded-full bg-red-500';
+        label.innerText = state.lang === 'en' ? 'Offline' : 'ఆఫ్‌లైన్';
+      } else {
+        dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+        label.innerText = state.lang === 'en' ? 'Syncing...' : 'సింక్ అవుతోంది...';
+      }
+    }
+
+    // Attaches a realtime listener to a Firestore collection, keeps `state`
+    // in sync automatically, and seeds default starter content the first
+    // time the collection is found completely empty (brand-new site).
+    function attachFirestoreListener(key, defaults) {
+      let firstSnapshot = true;
+      db.collection(FS_COLLECTIONS[key]).onSnapshot((snapshot) => {
+        setCloudStatus('connected');
+        if (snapshot.empty && firstSnapshot) {
+          firstSnapshot = false;
+          const batch = db.batch();
+          defaults.forEach(item => {
+            batch.set(db.collection(FS_COLLECTIONS[key]).doc(item.id), item);
+          });
+          batch.commit().catch(err => console.error('Seed error for ' + key, err));
+          return; // the commit above will trigger this listener again
+        }
+        firstSnapshot = false;
+        state[key] = snapshot.docs.map(d => d.data());
+        state.dataLoaded[key] = true;
+        renderApp();
+        if (state.adminAuthenticated) renderAdminTables();
+      }, (err) => {
+        console.error('Firestore listener error (' + key + '):', err);
+        setCloudStatus('error');
+        showToast(state.lang === 'en'
+          ? "Could not connect to live data. Check your internet connection."
+          : "లైవ్ డేటాకు కనెక్ట్ కాలేకపోయాం. ఇంటర్నెట్ కనెక్షన్ చెక్ చేయండి.", "error");
+      });
+    }
+
+    // Make sure an admin passcode document exists (first run only)
+    function ensureAdminSettingsDoc() {
+      FS_SETTINGS_DOC.get().then(snap => {
+        if (!snap.exists) {
+          FS_SETTINGS_DOC.set({ password: 'admin123' });
+        }
+      }).catch(err => console.error('Admin settings check failed:', err));
+    }
 
     // INIT METHOD
     window.onload = function() {
-      // Setup default configuration for localized security context if Firebase setup is not supplied
-      if (!localStorage.getItem('meena_admin_auth')) {
-        localStorage.setItem('meena_admin_auth', JSON.stringify({
-          email: 'admin@meena.com',
-          password: 'admin123',
-          securityQuestion: 'Who is your favourite goddess?',
-          securityAnswer: 'Meenakshi'
-        }));
-      }
+      setCloudStatus('syncing');
 
-      // Try initializing Firebase Auth
-      try {
-        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-          const config = JSON.parse(__firebase_config);
-          firebase.initializeApp(config);
-          firebaseAuth = firebase.auth();
-          useFirebase = true;
-          console.log("Firebase Auth initialized successfully.");
-        }
-      } catch (e) {
-        console.warn("Firebase Config not configured, running secure LocalStorage Auth framework:", e);
-      }
+      // Make sure admin passcode exists in the cloud (defaults to admin123)
+      ensureAdminSettingsDoc();
 
-      // Initialize LocalStorage variables if empty
-      if (!localStorage.getItem('meena_bangles')) {
-        localStorage.setItem('meena_bangles', JSON.stringify(DEFAULT_BANGLES));
-        localStorage.setItem('meena_services', JSON.stringify(DEFAULT_SERVICES));
-        localStorage.setItem('meena_offers', JSON.stringify(DEFAULT_OFFERS));
-        localStorage.setItem('meena_photos', JSON.stringify(DEFAULT_PHOTOS));
-        localStorage.setItem('meena_reviews', JSON.stringify(DEFAULT_REVIEWS));
-      }
+      // Attach realtime cloud listeners - these populate `state` and
+      // re-render automatically whenever data changes anywhere, on any device.
+      attachFirestoreListener('bangles', DEFAULT_BANGLES);
+      attachFirestoreListener('services', DEFAULT_SERVICES);
+      attachFirestoreListener('offers', DEFAULT_OFFERS);
+      attachFirestoreListener('photos', DEFAULT_PHOTOS);
+      attachFirestoreListener('reviews', DEFAULT_REVIEWS);
 
-      // Load State from Database
-      state.bangles = JSON.parse(localStorage.getItem('meena_bangles'));
-      state.services = JSON.parse(localStorage.getItem('meena_services'));
-      state.offers = JSON.parse(localStorage.getItem('meena_offers'));
-      state.photos = JSON.parse(localStorage.getItem('meena_photos'));
-      state.reviews = JSON.parse(localStorage.getItem('meena_reviews'));
-
-      // Validate persistent session authenticity
+      // Validate persistent session authenticity (device-local admin session)
       checkActiveSession();
 
-      // Check Saved Theme Preferences
+      // Check Saved Theme Preferences (device-local display preference)
       const savedTheme = localStorage.getItem('meena_theme');
       if (savedTheme === 'dark') {
         document.documentElement.classList.add('dark');
@@ -1133,7 +1195,7 @@
       // Update Calendar Year in Footer
       document.getElementById('current-year').innerText = new Date().getFullYear();
 
-      // Render Dashboard & Site
+      // Render Dashboard & Site (will show "loading" state until cloud data arrives)
       renderApp();
     };
 
@@ -1273,11 +1335,24 @@
       });
     }
 
+    // Shared "loading from cloud" placeholder shown until Firestore data arrives
+    function loadingPlaceholder(label) {
+      const text = state.lang === 'en' ? 'Loading from server...' : 'డేటా లోడ్ అవుతోంది...';
+      return `<div class="col-span-full py-14 text-center text-stone-400 flex flex-col items-center gap-3">
+        <i class="fa-solid fa-circle-notch fa-spin text-2xl text-rosegold-400"></i>
+        <span class="text-xs font-semibold uppercase tracking-widest">${text}</span>
+      </div>`;
+    }
+
     // ================= CLIENT SIDE RENDERING LOGIC =================
 
     // OFFERS CARDS GENERATOR (Filters out admin-hidden deals)
     function renderOffers() {
       const container = document.getElementById('offers-list');
+      if (!state.dataLoaded.offers) {
+        container.innerHTML = loadingPlaceholder();
+        return;
+      }
       const unhiddenOffers = state.offers.filter(o => !o.hidden);
       
       if (unhiddenOffers.length === 0) {
@@ -1353,7 +1428,12 @@
     // BANGLES LIST GENERATOR (Filters hidden products)
     function renderBanglesGrid() {
       const container = document.getElementById('bangles-grid');
-      
+
+      if (!state.dataLoaded.bangles) {
+        container.innerHTML = loadingPlaceholder();
+        return;
+      }
+
       let filtered = state.bangles.filter(b => !b.hidden);
       
       if (activeBangleCategory !== 'All') {
@@ -1429,6 +1509,12 @@
     // PARLOUR SERVICES LIST GENERATOR (Filters hidden services)
     function renderServicesGrid() {
       const container = document.getElementById('services-grid');
+
+      if (!state.dataLoaded.services) {
+        container.innerHTML = loadingPlaceholder();
+        return;
+      }
+
       let filtered = state.services.filter(s => !s.hidden);
       
       if (activeServiceCategory !== 'All') {
@@ -1524,22 +1610,67 @@
       }, 500);
     }
 
-    // GALLERY RENDER LOGIC (No video elements)
+    // Converts a pasted YouTube / Instagram / direct video link into an
+    // embeddable form so it can be shown inside the gallery grid.
+    function getVideoEmbedInfo(url) {
+      if (!url) return null;
+      url = url.trim();
+      let m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{6,})/);
+      if (m) return { type: 'youtube', src: `https://www.youtube.com/embed/${m[1]}` };
+      m = url.match(/instagram\.com\/(reel|p|tv)\/([a-zA-Z0-9_-]+)/);
+      if (m) return { type: 'instagram', src: `https://www.instagram.com/${m[1]}/${m[2]}/embed` };
+      if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(url)) return { type: 'file', src: url };
+      return { type: 'unknown', src: url };
+    }
+
+    // GALLERY RENDER LOGIC (Supports photos + pasted video links)
     function renderGallery() {
       const photoContainer = document.getElementById('gallery-photos');
+
+      if (!state.dataLoaded.photos) {
+        photoContainer.innerHTML = loadingPlaceholder();
+        return;
+      }
+
       const unhiddenPhotos = state.photos.filter(p => !p.hidden);
 
       if (unhiddenPhotos.length === 0) {
         photoContainer.innerHTML = `<p class="col-span-full py-10 text-center text-stone-500">No photos in gallery currently.</p>`;
       } else {
-        photoContainer.innerHTML = unhiddenPhotos.map(photo => `
-          <div class="group relative rounded-xl overflow-hidden shadow-md aspect-square bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 animate-scaleUp">
-            <img src="${photo.url}" onerror="this.src='${PLACEHOLDER_PHOTO}'" alt="${photo.caption}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-            <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end p-4">
-              <p class="text-white text-xs font-semibold">${photo.caption}</p>
+        photoContainer.innerHTML = unhiddenPhotos.map(photo => {
+          if (photo.videoUrl && photo.videoUrl.trim()) {
+            const v = getVideoEmbedInfo(photo.videoUrl);
+            let mediaHtml;
+            if (v.type === 'youtube' || v.type === 'instagram') {
+              mediaHtml = `<iframe src="${v.src}" class="w-full h-full border-0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
+            } else if (v.type === 'file') {
+              mediaHtml = `<video src="${v.src}" class="w-full h-full object-cover" controls preload="metadata"></video>`;
+            } else {
+              mediaHtml = `<a href="${v.src}" target="_blank" class="w-full h-full flex items-center justify-center bg-stone-900 text-white text-xs p-4 text-center hover:bg-stone-800 transition-colors">
+                <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> ${state.lang === 'en' ? 'Open Video Link' : 'వీడియో లింక్ తెరవండి'}
+              </a>`;
+            }
+            return `
+              <div class="group relative rounded-xl overflow-hidden shadow-md aspect-square bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 animate-scaleUp">
+                ${mediaHtml}
+                <div class="absolute top-2 left-2 bg-rosegold-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest flex items-center gap-1 pointer-events-none shadow">
+                  <i class="fa-solid fa-circle-play"></i> ${state.lang === 'en' ? 'Video' : 'వీడియో'}
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/0 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end p-4 pointer-events-none">
+                  <p class="text-white text-xs font-semibold">${photo.caption}</p>
+                </div>
+              </div>
+            `;
+          }
+          return `
+            <div class="group relative rounded-xl overflow-hidden shadow-md aspect-square bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 animate-scaleUp">
+              <img src="${photo.url}" onerror="this.src='${PLACEHOLDER_PHOTO}'" alt="${photo.caption}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+              <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end p-4">
+                <p class="text-white text-xs font-semibold">${photo.caption}</p>
+              </div>
             </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
       }
     }
 
@@ -1558,7 +1689,7 @@
       });
     }
 
-    function addCustomerReview(event) {
+    async function addCustomerReview(event) {
       event.preventDefault();
       const name = document.getElementById('rev-name').value.trim();
       const msg = document.getElementById('rev-msg').value.trim();
@@ -1575,17 +1706,30 @@
         hidden: false
       };
 
-      state.reviews.unshift(newReview);
-      localStorage.setItem('meena_reviews', JSON.stringify(state.reviews));
+      const submitBtn = event.target.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
 
-      document.getElementById('review-form').reset();
-      setFormStars(5);
-      renderReviews();
-      showToast(state.lang === 'en' ? "Thank you! Your testimonial has been submitted for review approval." : "ధన్యవాదాలు! మీ రివ్యూ ఆమోదం కొరకు సమర్పించబడింది.", "info");
+      try {
+        await db.collection(FS_COLLECTIONS.reviews).doc(newReview.id).set(newReview);
+        document.getElementById('review-form').reset();
+        setFormStars(5);
+        showToast(state.lang === 'en' ? "Thank you! Your testimonial has been submitted for review approval." : "ధన్యవాదాలు! మీ రివ్యూ ఆమోదం కొరకు సమర్పించబడింది.", "info");
+      } catch (e) {
+        console.error('Add review error:', e);
+        showToast(state.lang === 'en' ? "Could not submit your review. Check your internet connection." : "రివ్యూ సమర్పించలేకపోయాం. ఇంటర్నెట్ చెక్ చేయండి.", "error");
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
     }
 
     function renderReviews() {
       const container = document.getElementById('reviews-list');
+
+      if (!state.dataLoaded.reviews) {
+        container.innerHTML = loadingPlaceholder();
+        return;
+      }
+
       // Render only approved & visible reviews on customer side
       const visibleReviews = state.reviews.filter(rev => rev.approved && !rev.hidden);
 
@@ -1705,45 +1849,45 @@
     function showLoginView() {
       document.getElementById('admin-login-view').classList.remove('hidden');
       document.getElementById('admin-dashboard-view').classList.add('hidden');
-      document.getElementById('admin-recovery-view').classList.add('hidden');
     }
 
     function showDashboardView() {
       document.getElementById('admin-login-view').classList.add('hidden');
       document.getElementById('admin-dashboard-view').classList.remove('hidden');
-      document.getElementById('admin-recovery-view').classList.add('hidden');
-      
-      // Seed default configurations in settings panel fields
-      const creds = JSON.parse(localStorage.getItem('meena_admin_auth'));
-      document.getElementById('settings-question').value = creds.securityQuestion;
-      document.getElementById('settings-answer').value = creds.securityAnswer;
-
       renderAdminTables();
     }
 
-    // Secure Login Router (Standard Passcode Only)
+    // Secure Login Router - passcode is stored centrally in Firestore so it
+    // works the same on every device/browser.
     async function authenticateAdmin(event) {
       event.preventDefault();
       const password = document.getElementById('admin-pass-input').value;
+      const submitBtn = event.target.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
 
-      // Secure Local DB authentication fallback checking passcode only
-      const creds = JSON.parse(localStorage.getItem('meena_admin_auth'));
-      if (password === creds.password) {
-        createClientSession(creds.email);
-      } else {
-        showToast(state.lang === 'en' ? "Invalid passcode! Please try again." : "తప్పుడు పాస్‌కోడ్! దయచేసి మళ్ళీ ప్రయత్నించండి.", "error");
+      try {
+        const snap = await FS_SETTINGS_DOC.get();
+        const creds = snap.exists ? snap.data() : { password: 'admin123' };
+        if (password === creds.password) {
+          createClientSession();
+        } else {
+          showToast(state.lang === 'en' ? "Invalid passcode! Please try again." : "తప్పుడు పాస్‌కోడ్! దయచేసి మళ్ళీ ప్రయత్నించండి.", "error");
+        }
+      } catch (e) {
+        console.error('Admin login error:', e);
+        showToast(state.lang === 'en' ? "Could not verify passcode. Check your internet connection." : "పాస్‌కోడ్ చెక్ చేయలేకపోయాం. ఇంటర్నెట్ చెక్ చేయండి.", "error");
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
       }
     }
 
-    function createClientSession(email) {
+    function createClientSession() {
       state.adminAuthenticated = true;
       sessionStorage.setItem('meena_admin_session', 'active_' + Date.now());
       localStorage.setItem('meena_session_expiry', (Date.now() + 30 * 60 * 1000).toString()); // 30 Mins Expiry
-      
-      const emailInput = document.getElementById('admin-email-input');
-      if (emailInput) emailInput.value = '';
+
       document.getElementById('admin-pass-input').value = '';
-      
+
       showDashboardView();
       showToast("Access Unlocked! Welcome Back Meena.", "success");
     }
@@ -1752,9 +1896,6 @@
       state.adminAuthenticated = false;
       sessionStorage.removeItem('meena_admin_session');
       localStorage.removeItem('meena_session_expiry');
-      if (useFirebase && firebaseAuth) {
-        firebaseAuth.signOut();
-      }
       showLoginView();
       showToast("Safely logged out of Administrative console.", "info");
     }
@@ -1772,82 +1913,23 @@
       showToast("All device sessions revoked successfully.", "info");
     }
 
-    // RECOVERY MODULE (FORGOT PASSWORD)
-    function showForgotPasswordForm() {
-      const creds = JSON.parse(localStorage.getItem('meena_admin_auth'));
-      document.getElementById('admin-login-view').classList.add('hidden');
-      document.getElementById('admin-recovery-view').classList.remove('hidden');
-      document.getElementById('recovery-question-label').innerText = `Verification Question: ${creds.securityQuestion}`;
-      
-      document.getElementById('recovery-question-block').classList.remove('hidden');
-      document.getElementById('recovery-reset-block').classList.add('hidden');
-    }
-
-    function cancelRecovery() {
-      showLoginView();
-    }
-
-    function verifyRecoveryAnswer() {
-      const emailInput = document.getElementById('recovery-email-input').value.trim();
-      const answerInput = document.getElementById('recovery-answer-input').value.trim();
-      const creds = JSON.parse(localStorage.getItem('meena_admin_auth'));
-
-      if (emailInput.toLowerCase() === creds.email.toLowerCase() && answerInput.toLowerCase() === creds.securityAnswer.toLowerCase()) {
-        document.getElementById('recovery-question-block').classList.add('hidden');
-        document.getElementById('recovery-reset-block').classList.remove('hidden');
-        showToast("Identity verified successfully! Choose a new password.", "success");
-      } else {
-        showToast("Invalid security answers. Reset rejected.", "error");
-      }
-    }
-
-    async function submitNewPassword() {
-      const newPass = document.getElementById('recovery-new-pass').value;
-      if (!newPass) {
-        showToast("Please enter a valid password.", "error");
-        return;
-      }
-
-      const creds = JSON.parse(localStorage.getItem('meena_admin_auth'));
-      creds.password = newPass;
-      localStorage.setItem('meena_admin_auth', JSON.stringify(creds));
-
-      showToast("Password updated successfully! Please log in.", "success");
-      showLoginView();
-    }
-
-    // SETTINGS SAVING METHOD (Simplified passcode settings)
+    // SETTINGS SAVING METHOD - passcode is saved centrally to Firestore so
+    // the new passcode works immediately on every device.
     async function updateAdminCredentials(event) {
       event.preventDefault();
       if (!checkAdminSession()) return;
 
-      const password = document.getElementById('settings-new-pass').value;
-      const creds = JSON.parse(localStorage.getItem('meena_admin_auth'));
+      const password = document.getElementById('settings-new-pass').value.trim();
+      if (!password) return;
 
-      if (password) {
-        creds.password = password;
+      try {
+        await FS_SETTINGS_DOC.set({ password: password }, { merge: true });
+        document.getElementById('settings-new-pass').value = '';
+        showToast("Admin passcode saved successfully! Use it on any device from now on.", "success");
+      } catch (e) {
+        console.error('Update passcode error:', e);
+        showToast("Could not save passcode. Check your internet connection.", "error");
       }
-
-      localStorage.setItem('meena_admin_auth', JSON.stringify(creds));
-
-      document.getElementById('settings-new-pass').value = '';
-      showToast("Admin passcode saved successfully!", "success");
-    }
-
-    // Updates recovery credentials in local db storage
-    function updateAdminSecurity(event) {
-      event.preventDefault();
-      if (!checkAdminSession()) return;
-
-      const question = document.getElementById('settings-question').value;
-      const answer = document.getElementById('settings-answer').value.trim();
-      const creds = JSON.parse(localStorage.getItem('meena_admin_auth'));
-
-      creds.securityQuestion = question;
-      creds.securityAnswer = answer;
-
-      localStorage.setItem('meena_admin_auth', JSON.stringify(creds));
-      showToast("Security recovery credentials updated successfully!", "success");
     }
 
 
@@ -2013,47 +2095,43 @@
     }
 
     // VISIBILITY POST MANAGER TOGGLE
-    function toggleVisibility(target, itemId) {
+    const TARGET_TO_COLLECTION = {
+      bangle: 'bangles', service: 'services', offer: 'offers', photo: 'photos', review: 'reviews'
+    };
+    const TARGET_TO_STATE_KEY = {
+      bangle: 'bangles', service: 'services', offer: 'offers', photo: 'photos', review: 'reviews'
+    };
+
+    async function toggleVisibility(target, itemId) {
       if (!checkAdminSession()) return;
 
-      if (target === 'bangle') {
-        const item = state.bangles.find(b => b.id === itemId);
-        if (item) item.hidden = !item.hidden;
-        localStorage.setItem('meena_bangles', JSON.stringify(state.bangles));
-      } else if (target === 'service') {
-        const item = state.services.find(s => s.id === itemId);
-        if (item) item.hidden = !item.hidden;
-        localStorage.setItem('meena_services', JSON.stringify(state.services));
-      } else if (target === 'offer') {
-        const item = state.offers.find(o => o.id === itemId);
-        if (item) item.hidden = !item.hidden;
-        localStorage.setItem('meena_offers', JSON.stringify(state.offers));
-      } else if (target === 'photo') {
-        const item = state.photos.find(p => p.id === itemId);
-        if (item) item.hidden = !item.hidden;
-        localStorage.setItem('meena_photos', JSON.stringify(state.photos));
-      } else if (target === 'review') {
-        const item = state.reviews.find(r => r.id === itemId);
-        if (item) item.hidden = !item.hidden;
-        localStorage.setItem('meena_reviews', JSON.stringify(state.reviews));
-      }
+      const arr = state[TARGET_TO_STATE_KEY[target]];
+      const item = arr.find(x => x.id === itemId);
+      if (!item) return;
+      const newHidden = !item.hidden;
 
-      renderApp();
-      renderAdminTables();
-      showToast("Visibility options altered immediately!", "success");
+      try {
+        await db.collection(FS_COLLECTIONS[TARGET_TO_COLLECTION[target]]).doc(itemId).update({ hidden: newHidden });
+        showToast("Visibility options altered immediately!", "success");
+      } catch (e) {
+        console.error('Toggle visibility error:', e);
+        showToast("Could not update. Check your internet connection.", "error");
+      }
     }
 
     // APPROVE AND ACTIVATE USER TESTIMONIALS
-    function toggleApproveReview(reviewId) {
+    async function toggleApproveReview(reviewId) {
       if (!checkAdminSession()) return;
 
       const rev = state.reviews.find(r => r.id === reviewId);
-      if (rev) {
-        rev.approved = !rev.approved;
-        localStorage.setItem('meena_reviews', JSON.stringify(state.reviews));
-        renderApp();
-        renderAdminTables();
-        showToast(rev.approved ? "Review approved! It is now visible to customers." : "Review unapproved.", "success");
+      if (!rev) return;
+
+      try {
+        await db.collection(FS_COLLECTIONS.reviews).doc(reviewId).update({ approved: !rev.approved });
+        showToast(!rev.approved ? "Review approved! It is now visible to customers." : "Review unapproved.", "success");
+      } catch (e) {
+        console.error('Approve review error:', e);
+        showToast("Could not update. Check your internet connection.", "error");
       }
     }
 
@@ -2236,8 +2314,19 @@
           </div>
           <div>
             <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Select Photo File / ఫోటో ఎంచుకోండి</label>
-            <input type="file" id="inp-photo-file" onchange="convertBase64(this, 'photo-base64')" required class="w-full px-4 py-1.5 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-xs text-stone-500">
+            <input type="file" id="inp-photo-file" accept="image/*" onchange="convertBase64(this, 'photo-base64')" class="w-full px-4 py-1.5 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-xs text-stone-500">
             <input type="hidden" id="photo-base64" value="">
+            <p class="text-[10px] text-stone-400 mt-1">Photos are auto-compressed for fast loading. / ఫోటోలు తక్కువ సైజుకు ఆటోమేటిక్‌గా కంప్రెస్ అవుతాయి.</p>
+          </div>
+          <div class="relative flex items-center gap-3 py-1">
+            <div class="flex-1 border-t border-stone-200 dark:border-stone-800"></div>
+            <span class="text-[10px] uppercase font-bold text-stone-400">OR / లేదా</span>
+            <div class="flex-1 border-t border-stone-200 dark:border-stone-800"></div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-stone-500 mb-1">Video Link (YouTube / Instagram / Direct .mp4) / వీడియో లింక్</label>
+            <input type="url" id="inp-photo-video" placeholder="https://youtube.com/... or https://instagram.com/reel/..." class="w-full px-4 py-2 border rounded-lg bg-stone-50 dark:bg-stone-950 dark:border-stone-800 text-stone-800 dark:text-white text-xs">
+            <p class="text-[10px] text-stone-400 mt-1">Paste a video link to show "New Models" videos in the gallery (no file upload needed). / గ్యాలరీలో వీడియో చూపించడానికి లింక్ పేస్ట్ చేయండి - ఫైల్ అప్‌లోడ్ అవసరం లేదు.</p>
           </div>
         `;
       }
@@ -2280,30 +2369,78 @@
       document.getElementById('crud-form').reset();
     }
 
-    // BASE64 FILE PARSING FOR INSTANT LOCALSTORAGE PREVIEWS
+    // Resizes & compresses an image client-side so it stays well under
+    // Firestore's 1MB-per-document limit and loads fast on slow connections.
+    function compressImageFile(file, maxDim, quality) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let { width, height } = img;
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round(height * (maxDim / width));
+                width = maxDim;
+              } else {
+                width = Math.round(width * (maxDim / height));
+                height = maxDim;
+              }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.onerror = () => reject(new Error('Could not read image'));
+          img.src = e.target.result;
+        };
+        reader.onerror = () => reject(new Error('Could not read file'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // IMAGE FILE -> COMPRESSED BASE64 (stored directly in Firestore)
     function convertBase64(inputElement, targetHiddenId) {
       const file = inputElement.files[0];
       if (!file) return;
 
-      if (file.size > 2 * 1024 * 1024) {
-        showToast("Warning: File size exceeds 2MB! Please upload compressed images.", "error");
+      if (file.type.startsWith('video/')) {
+        showToast(state.lang === 'en'
+          ? "Video files can't be uploaded directly here. Please paste a YouTube/Instagram video link below instead."
+          : "వీడియో ఫైల్స్ నేరుగా అప్‌లోడ్ చేయలేరు. దయచేసి కింద YouTube/Instagram వీడియో లింక్ పేస్ట్ చేయండి.", "error");
+        inputElement.value = '';
+        return;
       }
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        document.getElementById(targetHiddenId).value = e.target.result;
-      };
-      reader.readAsDataURL(file);
+      compressImageFile(file, 1000, 0.72).then(dataUrl => {
+        document.getElementById(targetHiddenId).value = dataUrl;
+        const sizeKB = Math.round((dataUrl.length * 3 / 4) / 1024);
+        if (sizeKB > 700) {
+          showToast(state.lang === 'en'
+            ? `Image compressed to ~${sizeKB}KB - still large, consider a smaller photo.`
+            : `ఫోటో ~${sizeKB}KB కి కంప్రెస్ అయింది - ఇంకా పెద్దది, చిన్న ఫోటో వాడండి.`, "info");
+        }
+      }).catch(() => {
+        showToast(state.lang === 'en' ? "Could not process this image file." : "ఈ ఫోటో ఫైల్ ప్రాసెస్ చేయలేకపోయాం.", "error");
+        inputElement.value = '';
+      });
     }
 
     // FORM SUBMISSION ROUTINE FOR CREATES / UPDATES
-    function handleCrudSubmit(event) {
+    async function handleCrudSubmit(event) {
       event.preventDefault();
       if (!checkAdminSession()) return;
 
       const target = document.getElementById('crud-target').value;
       const mode = document.getElementById('crud-mode').value;
       const itemId = document.getElementById('crud-item-id').value;
+
+      let collectionKey = null;
+      let docId = null;
+      let docData = null;
 
       if (target === 'bangle') {
         const nameEn = document.getElementById('inp-bangle-name-en').value.trim();
@@ -2318,29 +2455,27 @@
         const descTe = document.getElementById('inp-bangle-desc-te').value.trim();
         const b64 = document.getElementById('bangle-base64').value || PLACEHOLDER_BANGLE;
 
+        collectionKey = 'bangles';
         if (mode === 'add') {
-          const newBangle = {
-            id: 'b_' + Date.now(),
-            name_en: nameEn, name_te: nameTe,
+          docId = 'b_' + Date.now();
+          docData = {
+            id: docId, name_en: nameEn, name_te: nameTe,
             category: cat, price: price, status: status,
             desc_en: descEn, desc_te: descTe,
             image: b64, hidden: false
           };
-          state.bangles.push(newBangle);
         } else {
-          const index = state.bangles.findIndex(b => b.id === itemId);
-          if (index !== -1) {
-            state.bangles[index] = {
-              ...state.bangles[index],
-              name_en: nameEn, name_te: nameTe,
-              category: cat, price: price, status: status,
-              desc_en: descEn, desc_te: descTe,
-              image: b64
-            };
-          }
+          docId = itemId;
+          const existing = state.bangles.find(b => b.id === itemId) || {};
+          docData = {
+            ...existing,
+            name_en: nameEn, name_te: nameTe,
+            category: cat, price: price, status: status,
+            desc_en: descEn, desc_te: descTe,
+            image: b64
+          };
         }
-        localStorage.setItem('meena_bangles', JSON.stringify(state.bangles));
-      } 
+      }
       else if (target === 'service') {
         const nameEn = document.getElementById('inp-service-name-en').value.trim();
         const nameTe = document.getElementById('inp-service-name-te').value.trim();
@@ -2354,29 +2489,27 @@
         const descTe = document.getElementById('inp-service-desc-te').value.trim();
         const b64 = document.getElementById('service-base64').value || PLACEHOLDER_SERVICE;
 
+        collectionKey = 'services';
         if (mode === 'add') {
-          const newSvc = {
-            id: 's_' + Date.now(),
-            name_en: nameEn, name_te: nameTe,
+          docId = 's_' + Date.now();
+          docData = {
+            id: docId, name_en: nameEn, name_te: nameTe,
             category: cat, price: price, duration: duration,
             desc_en: descEn, desc_te: descTe,
             image: b64, hidden: false
           };
-          state.services.push(newSvc);
         } else {
-          const index = state.services.findIndex(s => s.id === itemId);
-          if (index !== -1) {
-            state.services[index] = {
-              ...state.services[index],
-              name_en: nameEn, name_te: nameTe,
-              category: cat, price: price, duration: duration,
-              desc_en: descEn, desc_te: descTe,
-              image: b64
-            };
-          }
+          docId = itemId;
+          const existing = state.services.find(s => s.id === itemId) || {};
+          docData = {
+            ...existing,
+            name_en: nameEn, name_te: nameTe,
+            category: cat, price: price, duration: duration,
+            desc_en: descEn, desc_te: descTe,
+            image: b64
+          };
         }
-        localStorage.setItem('meena_services', JSON.stringify(state.services));
-      } 
+      }
       else if (target === 'offer') {
         const titleEn = document.getElementById('inp-offer-title-en').value.trim();
         const titleTe = document.getElementById('inp-offer-title-te').value.trim();
@@ -2386,55 +2519,77 @@
         const discount = document.getElementById('inp-offer-discount').value.trim();
         const validity = document.getElementById('inp-offer-validity').value.trim();
 
+        collectionKey = 'offers';
         if (mode === 'add') {
-          const newOffer = {
-            id: 'o_' + Date.now(),
-            title_en: titleEn, title_te: titleTe,
+          docId = 'o_' + Date.now();
+          docData = {
+            id: docId, title_en: titleEn, title_te: titleTe,
             desc_en: descEn, desc_te: descTe,
             code: code, discount: discount, validity: validity, hidden: false
           };
-          state.offers.push(newOffer);
         } else {
-          const index = state.offers.findIndex(o => o.id === itemId);
-          if (index !== -1) {
-            state.offers[index] = {
-              ...state.offers[index],
-              title_en: titleEn, title_te: titleTe,
-              desc_en: descEn, desc_te: descTe,
-              code: code, discount: discount, validity: validity
-            };
-          }
+          docId = itemId;
+          const existing = state.offers.find(o => o.id === itemId) || {};
+          docData = {
+            ...existing,
+            title_en: titleEn, title_te: titleTe,
+            desc_en: descEn, desc_te: descTe,
+            code: code, discount: discount, validity: validity
+          };
         }
-        localStorage.setItem('meena_offers', JSON.stringify(state.offers));
-      } 
+      }
       else if (target === 'photo') {
         const cap = document.getElementById('inp-photo-caption').value.trim();
         const b64 = document.getElementById('photo-base64').value;
-        if (!b64) {
-          showToast("Error: Please select a valid photo file.", "error");
+        const videoUrl = document.getElementById('inp-photo-video').value.trim();
+
+        if (!b64 && !videoUrl) {
+          showToast(state.lang === 'en'
+            ? "Please select a photo OR paste a video link."
+            : "దయచేసి ఫోటో ఎంచుకోండి లేదా వీడియో లింక్ పేస్ట్ చేయండి.", "error");
           return;
         }
 
-        const newPhoto = {
-          id: 'gp_' + Date.now(),
+        collectionKey = 'photos';
+        docId = 'gp_' + Date.now();
+        docData = {
+          id: docId,
           caption: cap,
-          url: b64, hidden: false
+          url: b64 || PLACEHOLDER_PHOTO,
+          videoUrl: videoUrl || '',
+          hidden: false
         };
-        state.photos.push(newPhoto);
-        localStorage.setItem('meena_photos', JSON.stringify(state.photos));
       }
       else if (target === 'review-reply') {
-        const index = state.reviews.findIndex(r => r.id === itemId);
-        if (index !== -1) {
-          state.reviews[index].reply = document.getElementById('inp-review-reply-msg').value.trim();
-          localStorage.setItem('meena_reviews', JSON.stringify(state.reviews));
-        }
+        collectionKey = 'reviews';
+        docId = itemId;
+        const existing = state.reviews.find(r => r.id === itemId) || {};
+        docData = {
+          ...existing,
+          reply: document.getElementById('inp-review-reply-msg').value.trim()
+        };
       }
 
-      closeCrudModal();
-      renderApp();
-      renderAdminTables();
-      showToast("Settings and data modifications published successfully!", "success");
+      if (!collectionKey || !docId || !docData) {
+        closeCrudModal();
+        return;
+      }
+
+      const submitBtn = event.target.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+
+      try {
+        await db.collection(FS_COLLECTIONS[collectionKey]).doc(docId).set(docData);
+        closeCrudModal();
+        showToast("Settings and data modifications published successfully!", "success");
+      } catch (e) {
+        console.error('Save error:', e);
+        showToast(state.lang === 'en'
+          ? "Could not save. Check your internet connection and try again."
+          : "సేవ్ చేయలేకపోయాం. ఇంటర్నెట్ చెక్ చేసి మళ్ళీ ట్రై చేయండి.", "error");
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
     }
 
     // TRIGGER EDIT ROUTINE
@@ -2450,26 +2605,15 @@
       );
       if (!verify) return;
 
-      if (target === 'bangle') {
-        state.bangles = state.bangles.filter(b => b.id !== itemId);
-        localStorage.setItem('meena_bangles', JSON.stringify(state.bangles));
-      } else if (target === 'service') {
-        state.services = state.services.filter(s => s.id !== itemId);
-        localStorage.setItem('meena_services', JSON.stringify(state.services));
-      } else if (target === 'offer') {
-        state.offers = state.offers.filter(o => o.id !== itemId);
-        localStorage.setItem('meena_offers', JSON.stringify(state.offers));
-      } else if (target === 'photo') {
-        state.photos = state.photos.filter(p => p.id !== itemId);
-        localStorage.setItem('meena_photos', JSON.stringify(state.photos));
-      } else if (target === 'review') {
-        state.reviews = state.reviews.filter(r => r.id !== itemId);
-        localStorage.setItem('meena_reviews', JSON.stringify(state.reviews));
+      try {
+        await db.collection(FS_COLLECTIONS[TARGET_TO_COLLECTION[target]]).doc(itemId).delete();
+        showToast("Data permanently removed from records.", "info");
+      } catch (e) {
+        console.error('Delete error:', e);
+        showToast(state.lang === 'en'
+          ? "Could not delete. Check your internet connection."
+          : "డిలీట్ చేయలేకపోయాం. ఇంటర్నెట్ చెక్ చేయండి.", "error");
       }
-
-      renderApp();
-      renderAdminTables();
-      showToast("Data permanently removed from records.", "info");
     }
   </script>
 </body>
